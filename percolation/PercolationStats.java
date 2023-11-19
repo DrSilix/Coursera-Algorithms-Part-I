@@ -14,12 +14,12 @@ import java.util.ArrayList;
 public class PercolationStats {
     private ArrayList<Double> trialResult = new ArrayList<Double>();
     private double mean;
-    private double stddev;
-    private double confLo, confHi;
     private double confidenceLevel95;
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
+        validate(n, trials);
+
         for (int i = 0; i < trials; i++) {
             Percolation trial = new Percolation(n);
             while (!trial.percolates()) {
@@ -30,10 +30,12 @@ public class PercolationStats {
         }
 
         mean = mean();
-        stddev = stddev();
+
+        double stddev = stddev();
         confidenceLevel95 = (1.96 * stddev) / Math.sqrt(trials);
-        confLo = confidenceLo();
-        confHi = confidenceHi();
+
+        double confLo = confidenceLo();
+        double confHi = confidenceHi();
 
         StdOut.println("mean                    = " + mean);
         StdOut.println("stddev                  = " + stddev);
@@ -63,11 +65,22 @@ public class PercolationStats {
         return mean + confidenceLevel95;
     }
 
+    private void validate(int n, int trials) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("Grid size " + n + " is not greater than 0");
+        }
+        if (trials <= 0) {
+            throw new IllegalArgumentException(
+                    "Number of trials " + trials + " is not greater than 0");
+        }
+    }
+
     // test client (see below)
     public static void main(String[] args) {
         Stopwatch timer = new Stopwatch();
-        PercolationStats ps = new PercolationStats(Integer.parseInt(args[0]),
-                                                   Integer.parseInt(args[1]));
+        int row = Integer.parseInt(args[0]);
+        int col = Integer.parseInt(args[1]);
+        PercolationStats ps = new PercolationStats(row, col);
         StdOut.println(timer.elapsedTime());
     }
 }

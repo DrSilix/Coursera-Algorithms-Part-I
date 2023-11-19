@@ -33,6 +33,8 @@ public class Percolation {
     // id 0 and the last id are the fake nodes, the top and bottom respectively
     // the size of the data structures are 2 greater than needed, the extra 2 are for the fake nodes
     public Percolation(int n) {
+        validate(n);
+
         gridSize = n;
         int gridSquared = gridSize * gridSize;
 
@@ -80,6 +82,7 @@ public class Percolation {
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
+        validate(row, col);
 
         // get the index of the node and its nearby nodes
         int p = xyTo1D(row, col);
@@ -124,11 +127,14 @@ public class Percolation {
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
+        validate(row, col);
         return open[xyTo1D(row, col)];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
+        validate(row, col);
+
         int n = xyTo1D(row, col);
 
         // quick check on the site
@@ -166,6 +172,22 @@ public class Percolation {
         return percolates;
     }
 
+    private void validate(int row, int col) {
+        if (col < 1 || col > gridSize) {
+            throw new IllegalArgumentException(
+                    "column index " + col + " is not between 1 and " + gridSize);
+        }
+        if (row < 1 || row > gridSize) {
+            throw new IllegalArgumentException(
+                    "row index " + row + " is not between 1 and " + gridSize);
+        }
+    }
+
+    private void validate(int n) {
+        if (n <= 0) {
+            throw new IllegalArgumentException("Grid size " + n + " is not greater than 0");
+        }
+    }
 
     // test client (optional)
     public static void main(String[] args) {
