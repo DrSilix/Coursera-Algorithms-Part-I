@@ -23,10 +23,8 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
 
-import java.util.ArrayList;
-
 public class PercolationStats {
-    private ArrayList<Double> trialResult = new ArrayList<Double>();
+    private double[] trialResult;
     private double mean;
     private double stddev;
     private double confidenceLevel95;
@@ -34,6 +32,8 @@ public class PercolationStats {
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
+        trialResult = new double[trials];
+
         validate(n, trials);
 
         for (int i = 0; i < trials; i++) {
@@ -41,7 +41,7 @@ public class PercolationStats {
             while (!trial.percolates()) {
                 trial.open(StdRandom.uniformInt(n) + 1, StdRandom.uniformInt(n) + 1);
             }
-            trialResult.add((double) trial.numberOfOpenSites() / (n * n));
+            trialResult[i] = (double) trial.numberOfOpenSites() / (n * n);
             // StdOut.println("Trial " + (i + 1) + " completed.");
         }
 
@@ -56,14 +56,12 @@ public class PercolationStats {
 
     // sample mean of percolation threshold
     public double mean() {
-        double[] temp = trialResult.stream().mapToDouble(Double::doubleValue).toArray();
-        return StdStats.mean(temp);
+        return StdStats.mean(trialResult);
     }
 
     // sample standard deviation of percolation threshold
     public double stddev() {
-        double[] temp = trialResult.stream().mapToDouble(Double::doubleValue).toArray();
-        return StdStats.stddev(temp);
+        return StdStats.stddev(trialResult);
     }
 
     // low endpoint of 95% confidence interval
