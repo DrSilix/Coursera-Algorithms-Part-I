@@ -49,7 +49,8 @@ public class Percolation {
         neighborsCache = new int[gridSquared + 2][4];
 
         numOpen = 0;
-        percolates = false; // this is necessary to efficiently check percolation for backwash
+        percolates
+                = false; // this is necessary to efficiently check percolation after it has happened
 
         topFakeNode = 0;
         bottomFakeNode = gridSquared + 1;
@@ -94,7 +95,7 @@ public class Percolation {
         int p = xyTo1D(row, col);
         int[] nearby = retrieveNeighborsTo1D(row, col);
 
-        // store the last cell that was added anc cache neighbors for backwashFix
+        // store the last cell that was added and cache neighbors for calling backwashFix from isFull
         lastCell = p;
         neighborsCache[p] = nearby;
 
@@ -111,22 +112,20 @@ public class Percolation {
                 continue;
             }
 
-            if (uf.find(p) != uf.find(q)) {
-                uf.union(p, q);  // look into not checking if they are part of the same set
-            }
-            else {
+            // check for duplicates
+            if (uf.find(p) == uf.find(q)) {
                 continue;
             }
+
+            // call to union-find data structure that connects nodes
+            uf.union(p, q);  // look into not checking if they are part of the same set
+
 
             // this is a computation saving measure
             // it will not do a union-find query for the fullness of the canonical node
             // it checks if the neighbor we are evaluating is full and marks the current node full
             if (full[q] && !full[p]) {
                 full[p] = true;
-
-                if (percolates) {
-                    backwashFix(p);
-                }
 
                 // loop through all neighbors to fill them
                 for (int j = 0; j < 4; j++) {
