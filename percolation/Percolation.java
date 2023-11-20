@@ -26,10 +26,8 @@ public class Percolation {
     private WeightedQuickUnionUF uf;
     private boolean[] open;
     private boolean[] full;
-    private int[][] neighborsCache;
-    private int lastCell;
-    private int numOpen;
     private boolean percolates;
+    private int numOpen;
     private int topFakeNode;
     private int bottomFakeNode;
 
@@ -46,11 +44,8 @@ public class Percolation {
 
         open = new boolean[gridSquared + 2];
         full = new boolean[gridSquared + 2];
-        neighborsCache = new int[gridSquared + 2][4];
 
         numOpen = 0;
-        percolates
-                = false; // this is necessary to efficiently check percolation after it has happened
 
         topFakeNode = 0;
         bottomFakeNode = gridSquared + 1;
@@ -95,39 +90,22 @@ public class Percolation {
         int p = xyTo1D(row, col);
         int[] nearby = retrieveNeighborsTo1D(row, col);
 
-        // store the last cell that was added and cache neighbors for calling backwashFix from isFull
-        lastCell = p;
-        neighborsCache[p] = nearby;
-
         if (open[p]) {
             return;
         }
 
-        checkAndFillNeighbors(p, nearby[0]);
-        checkAndFillNeighbors(p, nearby[1]);
-        checkAndFillNeighbors(p, nearby[2]);
-        checkAndFillNeighbors(p, nearby[3]);
+        checkNeighbors(p, nearby[0]);
+        checkNeighbors(p, nearby[1]);
+        checkNeighbors(p, nearby[2]);
+        checkNeighbors(p, nearby[3]);
 
         open[p] = true;
         numOpen++;
-
-        // reverse fill neighbors
-        checkAndFillNeighbors(p, nearby[0]);
-        checkAndFillNeighbors(p, nearby[1]);
-        checkAndFillNeighbors(p, nearby[2]);
-        checkAndFillNeighbors(p, nearby[3]);
     }
 
-    private void checkAndFillNeighbors(int p, int q) {
+    private void checkNeighbors(int p, int q) {
         // neighbor value is -1 for invalid neighbors
-        if (q < 0 || !open[q] || (percolates && q == bottomFakeNode)) {
-            return;
-        }
-
-        // reverse fill neighbors
-        if (full[p] && !full[q]) {
-            full[q] = true;
-            backwashFix(q);
+        if (q < 0 || !open[q]) {
             return;
         }
 
@@ -157,10 +135,7 @@ public class Percolation {
             return true;
         }
 
-        // check if the system percolates then check if the parent is full, mark the node full if so
-        // it is necessary to not do this when the system percolates otherwise backfill will happen
-        percolates();
-        if (full[uf.find(n)] && !percolates) {
+        if (uf.find(n) == uf.find(topFakeNode)) {
             full[n] = true;
             return true;
         }
@@ -196,26 +171,6 @@ public class Percolation {
         if (n <= 0) {
             throw new IllegalArgumentException("Grid size " + n + " is not greater than 0");
         }
-    }
-
-    // recurse through all empty neighbors and their neighbors until everything is full
-    private void backwashFix(int p) {
-        int[] neighbors = neighborsCache[p];
-
-        for (int i = 0; i < 4; i++) {
-            // abort if the neighbor is invalid or one of the fake nodes
-            if (neighbors[i] == -1 || neighbors[i] == topFakeNode
-                    || neighbors[i] == bottomFakeNode) {
-                continue;
-            }
-
-            // fill empty neighbors and restart the process
-            if (open[neighbors[i]] && !full[neighbors[i]]) {
-                full[neighbors[i]] = true;
-                backwashFix(neighbors[i]);
-            }
-        }
-
     }
 
     // test client (optional)

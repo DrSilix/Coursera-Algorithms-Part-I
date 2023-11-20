@@ -32,9 +32,9 @@ public class PercolationStats {
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
-        trialResult = new double[trials];
-
         validate(n, trials);
+
+        trialResult = new double[trials];
 
         for (int i = 0; i < trials; i++) {
             Percolation trial = new Percolation(n);
