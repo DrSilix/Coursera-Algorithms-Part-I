@@ -1,18 +1,20 @@
 /* *****************************************************************************
- *  Name:              Alan Turing
- *  Coursera User ID:  123456
- *  Last modified:     1/1/2019
+ *  Name:              Alex Hackl
+ *  Coursera User ID:  alexhackl@live.com
+ *  Last modified:     11/19/2023
  *
+ *  Compilation: javac-algs4 Percolation.java
+ *  Execution: java-algs4 Percolation < input10.txt
  *
- *  backwash: maybe continually reset/unlink the bottom node. I could keep a list
- *  of the bottom nodes that open with unique parents. When checking for percolation
- *  I iterate unioning those lists... massive issue with causing errors in the uf datastruct
- *  once unioned unlinking a node won't update it's neighbors that were also linked
+ *  Library for use with PercolationVisualizer or PercolationStats. Assists
+ *  with the construction of a blank n-by-n grid union-find data structure and
+ *  then can be used to perform operations on that data structure including opening
+ *  nodes, checking if they are open or full, checking the number of sites, and
+ *  checking to see if the system percolates
  *
- *  - using n separate fake bottom nodes (ignores the purpose of the fake bottom "node"
- *  - faq suggests using a second uf object (wouldn't this double everything for the non visualizer stuff)
- *  - not linking nodes to the bottom unless full (again ignores purpose of bottom node)
- *  - create a sort of custom filtered union find bottom contraption
+ *  This can also be run itself with a text file standard input and will output
+ *  the connection pairs ending with the number of components
+ *
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.StdIn;
@@ -24,6 +26,8 @@ public class Percolation {
     private WeightedQuickUnionUF uf;
     private boolean[] open;
     private boolean[] full;
+    private int[][] neighborsCache;
+    private int lastCell;
     private int numOpen;
     private boolean percolates;
     private int topFakeNode;
@@ -39,8 +43,10 @@ public class Percolation {
         int gridSquared = gridSize * gridSize;
 
         uf = new WeightedQuickUnionUF(gridSquared + 2);
+
         open = new boolean[gridSquared + 2];
         full = new boolean[gridSquared + 2];
+        neighborsCache = new int[gridSquared + 2][4];
 
         numOpen = 0;
         percolates = false; // this is necessary to efficiently check percolation for backwash
@@ -88,12 +94,16 @@ public class Percolation {
         int p = xyTo1D(row, col);
         int[] nearby = retrieveNeighborsTo1D(row, col);
 
+        // store the last cell that was added anc cache neighbors for backwashFix
+        lastCell = p;
+        neighborsCache[p] = nearby;
+
         if (open[p]) {
             return;
         }
 
         // check each nearby node if it is open, if so then union
-        for (int i = 0, len = nearby.length; i < len; i++) {
+        for (int i = 0; i < 4; i++) {
             int q = nearby[i];
 
             // neighbor value is -1 for invalid neighbors
@@ -102,7 +112,10 @@ public class Percolation {
             }
 
             if (uf.find(p) != uf.find(q)) {
-                uf.union(p, q);
+                uf.union(p, q);  // look into not checking if they are part of the same set
+            }
+            else {
+                continue;
             }
 
             // this is a computation saving measure
@@ -111,12 +124,17 @@ public class Percolation {
             if (full[q] && !full[p]) {
                 full[p] = true;
 
+                if (percolates) {
+                    backwashFix(p);
+                }
+
                 // loop through all neighbors to fill them
-                for (int j = 0; j < len; j++) {
-                    if (nearby[j] < 0 || !open[nearby[j]] || nearby[j] == bottomFakeNode) {
+                for (int j = 0; j < 4; j++) {
+                    if (nearby[j] < 0 || !open[nearby[j]]) {
                         continue; // continues if neighbor value is invalid, closed, or the bottom node
                     }
                     full[nearby[j]] = true;
+                    backwashFix(nearby[j]);
                 }
             }
         }
@@ -137,21 +155,21 @@ public class Percolation {
 
         int n = xyTo1D(row, col);
 
+        percolates();
+
+        if (!percolates) {
+            if (percolates()) {
+                backwashFix(lastCell);
+            }
+        }
+
         // quick check on the site
         if (full[n]) {
             return true;
         }
 
         // check if the parent is full, mark the node full if so
-        int parent = uf.find(n);
-        if (full[parent]) {
-            full[n] = true;
-            return true;
-        }
-
-        // check if the parent of the node is the same parent as the top
-        // mark full if so
-        if (parent == uf.find(topFakeNode)) {
+        if (full[uf.find(n)] && !percolates) {
             full[n] = true;
             return true;
         }
@@ -189,6 +207,23 @@ public class Percolation {
         }
     }
 
+    // recurse through
+    private void backwashFix(int p) {
+        int[] neighbors = neighborsCache[p];
+
+        for (int i = 0; i < 4; i++) {
+            if (neighbors[i] == -1 || neighbors[i] == topFakeNode
+                    || neighbors[i] == bottomFakeNode) {
+                continue;
+            }
+            if (open[neighbors[i]] && !full[neighbors[i]]) {
+                full[neighbors[i]] = true;
+                backwashFix(neighbors[i]);
+            }
+        }
+
+    }
+
     // test client (optional)
     public static void main(String[] args) {
         int n = StdIn.readInt();
@@ -207,9 +242,6 @@ public class Percolation {
                     }
                     else if (test.isOpen(row, col)) {
                         opened++;
-                    }
-                    if (test.isFull(-1, -1)) {
-                        StdOut.println(opened);
                     }
                 }
             }

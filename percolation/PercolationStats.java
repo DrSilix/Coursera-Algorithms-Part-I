@@ -1,7 +1,22 @@
 /* *****************************************************************************
- *  Name:              Alan Turing
- *  Coursera User ID:  123456
- *  Last modified:     1/1/2019
+ *  Name:              Alex Hackl
+ *  Coursera User ID:  alexhackl@live.com
+ *  Last modified:     11/19/2023
+ *
+ *  Compilation: javac-algs4 PercolationStats.java
+ *  Execution: java-algs4 PercolationStats 100 200
+ *
+ *  Library that can be called to handle a Monte Carlo simulation using the library
+ *  Percolation. A number of trials is performed on a grid of n size and then the
+ *  results are computed.
+ *
+ *  This can also be run itself with provided arguments
+ *
+ *  % java-algs4 PercolationStats 100 200
+ *  mean                    = 0.5924435
+ *  stddev                  = 0.014926094574476984
+ *  95% confidence interval = [0.5903748488327121, 0.594512151167288]
+ *
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.StdOut;
@@ -14,7 +29,9 @@ import java.util.ArrayList;
 public class PercolationStats {
     private ArrayList<Double> trialResult = new ArrayList<Double>();
     private double mean;
+    private double stddev;
     private double confidenceLevel95;
+    private double confLo, confHi;
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
@@ -31,16 +48,11 @@ public class PercolationStats {
 
         mean = mean();
 
-        double stddev = stddev();
+        stddev = stddev();
         confidenceLevel95 = (1.96 * stddev) / Math.sqrt(trials);
 
-        double confLo = confidenceLo();
-        double confHi = confidenceHi();
-
-        StdOut.println("mean                    = " + mean);
-        StdOut.println("stddev                  = " + stddev);
-        StdOut.println(
-                "95% confidence interval = [" + confLo + ", " + confHi + "]");
+        confLo = confidenceLo();
+        confHi = confidenceHi();
     }
 
     // sample mean of percolation threshold
@@ -81,6 +93,10 @@ public class PercolationStats {
         int row = Integer.parseInt(args[0]);
         int col = Integer.parseInt(args[1]);
         PercolationStats ps = new PercolationStats(row, col);
+        StdOut.println("mean                    = " + ps.mean);
+        StdOut.println("stddev                  = " + ps.stddev);
+        StdOut.println(
+                "95% confidence interval = [" + ps.confLo + ", " + ps.confHi + "]");
         StdOut.println(timer.elapsedTime());
     }
 }
