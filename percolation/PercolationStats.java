@@ -22,7 +22,6 @@
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
-import edu.princeton.cs.algs4.Stopwatch;
 
 import java.util.ArrayList;
 
@@ -89,7 +88,7 @@ public class PercolationStats {
 
     // test client (see below)
     public static void main(String[] args) {
-        Stopwatch timer = new Stopwatch();
+        // Stopwatch timer = new Stopwatch();
         int row = Integer.parseInt(args[0]);
         int col = Integer.parseInt(args[1]);
         PercolationStats ps = new PercolationStats(row, col);
@@ -97,6 +96,6 @@ public class PercolationStats {
         StdOut.println("stddev                  = " + ps.stddev);
         StdOut.println(
                 "95% confidence interval = [" + ps.confLo + ", " + ps.confHi + "]");
-        StdOut.println(timer.elapsedTime());
+        // StdOut.println(timer.elapsedTime());
     }
 }

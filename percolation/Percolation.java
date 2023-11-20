@@ -103,43 +103,41 @@ public class Percolation {
             return;
         }
 
-        // check each nearby node if it is open, if so then union
-        for (int i = 0; i < 4; i++) {
-            int q = nearby[i];
-
-            // neighbor value is -1 for invalid neighbors
-            if (q < 0 || !open[q] || (percolates && q == bottomFakeNode)) {
-                continue;
-            }
-
-            // check for duplicates
-            if (uf.find(p) == uf.find(q)) {
-                continue;
-            }
-
-            // call to union-find data structure that connects nodes
-            uf.union(p, q);  // look into not checking if they are part of the same set
-
-
-            // this is a computation saving measure
-            // it will not do a union-find query for the fullness of the canonical node
-            // it checks if the neighbor we are evaluating is full and marks the current node full
-            if (full[q] && !full[p]) {
-                full[p] = true;
-
-                // loop through all neighbors to fill them
-                for (int j = 0; j < 4; j++) {
-                    if (nearby[j] < 0 || !open[nearby[j]]) {
-                        continue; // continues if neighbor value is invalid, closed, or the bottom node
-                    }
-                    full[nearby[j]] = true;
-                    backwashFix(nearby[j]);
-                }
-            }
-        }
+        checkAndFillNeighbors(p, nearby[0]);
+        checkAndFillNeighbors(p, nearby[1]);
+        checkAndFillNeighbors(p, nearby[2]);
+        checkAndFillNeighbors(p, nearby[3]);
 
         open[p] = true;
         numOpen++;
+
+        // reverse fill neighbors
+        checkAndFillNeighbors(p, nearby[0]);
+        checkAndFillNeighbors(p, nearby[1]);
+        checkAndFillNeighbors(p, nearby[2]);
+        checkAndFillNeighbors(p, nearby[3]);
+    }
+
+    private void checkAndFillNeighbors(int p, int q) {
+        // neighbor value is -1 for invalid neighbors
+        if (q < 0 || !open[q] || (percolates && q == bottomFakeNode)) {
+            return;
+        }
+
+        // reverse fill neighbors
+        if (full[p] && !full[q]) {
+            full[q] = true;
+            backwashFix(q);
+            return;
+        }
+
+        // call to union-find data structure that connects nodes
+        uf.union(p, q);  // look into not checking if they are part of the same set
+
+        // checks if the neighbor we are evaluating is full and marks the current node full
+        if (full[q] && !full[p]) {
+            full[p] = true;
+        }
     }
 
     // is the site (row, col) open?
@@ -154,20 +152,14 @@ public class Percolation {
 
         int n = xyTo1D(row, col);
 
-        percolates();
-
-        if (!percolates) {
-            if (percolates()) {
-                backwashFix(lastCell);
-            }
-        }
-
         // quick check on the site
         if (full[n]) {
             return true;
         }
 
-        // check if the parent is full, mark the node full if so
+        // check if the system percolates then check if the parent is full, mark the node full if so
+        // it is necessary to not do this when the system percolates otherwise backfill will happen
+        percolates();
         if (full[uf.find(n)] && !percolates) {
             full[n] = true;
             return true;
@@ -206,15 +198,18 @@ public class Percolation {
         }
     }
 
-    // recurse through
+    // recurse through all empty neighbors and their neighbors until everything is full
     private void backwashFix(int p) {
         int[] neighbors = neighborsCache[p];
 
         for (int i = 0; i < 4; i++) {
+            // abort if the neighbor is invalid or one of the fake nodes
             if (neighbors[i] == -1 || neighbors[i] == topFakeNode
                     || neighbors[i] == bottomFakeNode) {
                 continue;
             }
+
+            // fill empty neighbors and restart the process
             if (open[neighbors[i]] && !full[neighbors[i]]) {
                 full[neighbors[i]] = true;
                 backwashFix(neighbors[i]);
