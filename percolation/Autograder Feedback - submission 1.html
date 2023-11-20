@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<!-- saved from url=(0106)https://www.coursera.org/api/rest/v1/executorruns/richfeedback?id=9m9JModHEe6YTg4jEO4zxQ&feedbackType=HTML -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Autograder Feedback</title>
+
+<link rel="stylesheet" href="./Autograder Feedback_files/stylesheet"></head>
+
+<body>
+
+<p>
+<em>
+See the Assessment Guide for information on how to interpret this report.
+</em>
+
+</p><p>
+<em>
+Want to receive personalized feedback on this submission?
+You can pay to have a teaching assistant read and provide
+personalized feedback on your submission at https://mooc.codepost.io.
+</em>
+
+<br><br>
+
+</p><h2>ASSESSMENT SUMMARY</h2>
+<pre>
+Compilation:  <font color="#009900">PASSED</font>
+API:          <font color="#009900">PASSED</font>
+
+SpotBugs:     <font color="#009900">PASSED</font>
+PMD:          <font color="#009900">PASSED</font>
+Checkstyle:   <font color="#990000">FAILED (3 errors, 3 warnings)</font>
+
+Correctness:  <font color="#009900">No tests available for autograding.</font>
+Memory:       <font color="#009900">No tests available for autograding.</font>
+Timing:       <font color="#009900">No tests available for autograding.</font>
+
+Aggregate score: 10.00%
+[ Compilation: 5%, API: 5%, Style: 0%, Correctness: 90% ]
+</pre>
+
+
+<br><br>
+
+<h2>ASSESSMENT DETAILS</h2>
+
+<pre>
+The following files were submitted:
+----------------------------------
+7.9K Nov 20 01:56 Percolation.java
+3.5K Nov 20 01:56 PercolationStats.java
+
+
+********************************************************************************
+*  COMPILING                                                                    
+********************************************************************************
+
+
+% javac Percolation.java
+*-----------------------------------------------------------
+
+% javac PercolationStats.java
+*-----------------------------------------------------------
+
+
+================================================================
+
+
+Checking the APIs of your programs.
+*-----------------------------------------------------------
+Percolation:
+
+PercolationStats:
+
+================================================================
+
+
+********************************************************************************
+*  CHECKING STYLE AND COMMON BUG PATTERNS                                       
+********************************************************************************
+
+
+% spotbugs *.class
+*-----------------------------------------------------------
+
+
+================================================================
+
+
+% pmd .
+*-----------------------------------------------------------
+
+
+================================================================
+
+
+% checkstyle *.java
+*-----------------------------------------------------------
+
+% custom checkstyle checks for Percolation.java
+*-----------------------------------------------------------
+[WARN] Percolation.java:29:13: Can you use the type 'boolean[][]' instead of 'int[][]'? [Design]
+[WARN] Percolation.java:49:51: The numeric literal '4' appears to be unnecessary. [NumericLiteral]
+[WARN] Percolation.java:205:29: The numeric literal '4' appears to be unnecessary. [NumericLiteral]
+Checkstyle ends with 0 errors and 3 warnings.
+
+% custom checkstyle checks for PercolationStats.java
+*-----------------------------------------------------------
+Checkstyle ends with 3 errors.
+[ERROR] PercolationStats.java:26:1: Do not import 'java.util.ArrayList' in this program. [IllegalImport]
+[ERROR] PercolationStats.java:29:13: Do not use the 'ArrayList' data type in this program. [IllegalType]
+[ERROR] PercolationStats.java:29:45: Do not create objects of type 'java.util.ArrayList' on this assignment. [IllegalInstantiation]
+Checkstyle ends with 3 errors and 0 warnings.
+
+
+================================================================
+
+
+ABORTING: you must fix any Checkstyle errors (not warnings).
+</pre>
+
+
+</body></html>
