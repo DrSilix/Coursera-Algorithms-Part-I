@@ -57,20 +57,29 @@ public class Percolation {
     }
 
     // returns the 1d index for the given coordinates if it is within bounds otherwise it returns -1
-    private int xyTo1D(int x, int y) {
-        if (x < 1 || x > gridSize || y < 1 || y > gridSize) {
+    private int getXYTo1D(int row, int col) {
+        if (row < 1 || row > gridSize || col < 1 || col > gridSize) {
             return -1;
         }  // possibly use an exception to handle oob
-        return (gridSize * (x - 1)) + y;
+        return (gridSize * (row - 1)) + col;
+    }
+
+    private int[] get1DtoXY(int n) {
+        if (n > 0 && n <= (gridSize * gridSize)) {
+            return new int[] { n / gridSize, n % gridSize };
+        }
+        else {
+            return new int[] { -1, -1 };
+        }
     }
 
     // returns array of 1d indices for valid neighbors to a node {up, down, left, right}
     // if the node is in the top or bottom row the relevant fake node id is swapped
-    private int[] retrieveNeighborsTo1D(int x, int y) {
-        int up = xyTo1D(x - 1, y);
-        int down = xyTo1D(x + 1, y);
-        int left = xyTo1D(x, y - 1);
-        int right = xyTo1D(x, y + 1);
+    private int[] retrieveNeighborsTo1D(int row, int col) {
+        int up = getXYTo1D(row - 1, col);
+        int down = getXYTo1D(row + 1, col);
+        int left = getXYTo1D(row, col - 1);
+        int right = getXYTo1D(row, col + 1);
 
         if (up == -1) {
             up = topFakeNode;
@@ -87,7 +96,7 @@ public class Percolation {
         validate(row, col);
 
         // get the index of the node and its nearby nodes
-        int p = xyTo1D(row, col);
+        int p = getXYTo1D(row, col);
         int[] nearby = retrieveNeighborsTo1D(row, col);
 
         if (open[p]) {
@@ -101,6 +110,8 @@ public class Percolation {
 
         open[p] = true;
         numOpen++;
+
+        percolates();
     }
 
     private void checkNeighbors(int p, int q) {
@@ -113,7 +124,7 @@ public class Percolation {
         uf.union(p, q);  // look into not checking if they are part of the same set
 
         // checks if the neighbor we are evaluating is full and marks the current node full
-        if (full[q] && !full[p]) {
+        if (!percolates && full[q] && !full[p]) {
             full[p] = true;
         }
     }
@@ -121,25 +132,43 @@ public class Percolation {
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
         validate(row, col);
-        return open[xyTo1D(row, col)];
+        return open[getXYTo1D(row, col)];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
         validate(row, col);
+        int n = getXYTo1D(row, col);
 
-        int n = xyTo1D(row, col);
-
-        // quick check on the site
-        if (full[n]) {
-            return true;
-        }
-
-        if (uf.find(n) == uf.find(topFakeNode)) {
+        // quick check on the site then comprehensive
+        if (full[n] || (!percolates && uf.find(n) == uf.find(topFakeNode))) {
             full[n] = true;
             return true;
         }
+
+        if (percolates && full[n]) {
+            backwashFix(n);
+        }
+
         return false;
+    }
+
+    private void backwashFix(int p) {
+        int[] rowCol = get1DtoXY(p);
+        int[] neighbors = retrieveNeighborsTo1D(rowCol[0], rowCol[1]);
+        for (int i = 0; i < 4; i++) {
+            // abort if the neighbor is invalid or one of the fake nodes
+            if (neighbors[i] == -1 || neighbors[i] == topFakeNode
+                    || neighbors[i] == bottomFakeNode) {
+                continue;
+            }
+
+            // fill empty neighbors and restart the process
+            if (open[neighbors[i]] && !full[neighbors[i]]) {
+                full[neighbors[i]] = true;
+                backwashFix(neighbors[i]);
+            }
+        }
     }
 
     // returns the number of open sites
