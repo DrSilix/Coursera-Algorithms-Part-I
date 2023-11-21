@@ -2,6 +2,16 @@
  *  Name:
  *  Date:
  *  Description:
+ *
+ *  requirements
+ *  Non-iterator operations     Constant amortized time
+ *  Iterator constructor        linear in current # of items
+ *  Other iterator operations   Constant worst-case time
+ *  Non-iterator memory use     Linear in current # of items
+ *  Memory per iterator         Linear in current # of items
+ *
+ *  pretty sure have to use array-list in order to randomly access the array, linked list would
+ *  only allow you to go in order
  **************************************************************************** */
 
 import java.util.Iterator;
