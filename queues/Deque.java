@@ -11,6 +11,10 @@
  *  Memory per iterator          Constant
  *
  *  pretty sure have to use linked list to get constant non-iterator operations time worst-case
+ *
+ *  crap, it seems like the output time is quadratic, logarithmic then quadratic, and there's spikes????
+ *  need to implement exceptions
+ *  need to test nested iterators
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.StdOut;
@@ -122,44 +126,55 @@ public class Deque<Item> implements Iterable<Item> {
 
     // unit testing (required)
     public static void main(String[] args) {
-        int size = Integer.parseInt(args[0]);
+        int startingSize = Integer.parseInt(args[0]);
+        int trials = Integer.parseInt(args[1]);
+
+        for (int i = 0; i < trials; i++) {
+            int size = (int) (startingSize * Math.pow(2, i));
+            StdOut.println(size + ", " + trial(size));
+        }
+    }
+
+    private static double trial(int size) {
         Stopwatch timer = new Stopwatch();
 
 
         Deque<Integer> deque = new Deque<Integer>();
-        StdOut.println("Unit Test : addFirst");
+        //StdOut.println("Unit Test : addFirst");
         for (int i = 0; i < size; i++) {
             deque.addFirst(i);
         }
-        StdOut.println("Deque has " + deque.size() + " Nodes");
-        StdOut.println("\nUnit Test : iterator while full");
+        //StdOut.println("Deque has " + deque.size() + " Nodes");
+        //StdOut.println("\nUnit Test : iterator while full");
         String output = "";
         for (int i : deque) {
             output += i + " - ";
         }
-        StdOut.println(output);
-        StdOut.println("\nUnit Test : removeLast");
+        //StdOut.println(output);
+        //StdOut.println("\nUnit Test : removeLast");
         while (!deque.isEmpty()) {
-            StdOut.println(deque.removeLast());
+            //StdOut.println(
+            deque.removeLast();
         }
-        StdOut.println("Deque has " + deque.size() + " Nodes");
-        StdOut.println("\nUnit Test : iterator while empty");
+        //StdOut.println("Deque has " + deque.size() + " Nodes");
+        //StdOut.println("\nUnit Test : iterator while empty");
         output = "";
         for (int i : deque) {
             output += i + " - ";
         }
 
-        StdOut.println("\nUnit Test : addLast");
+        //StdOut.println("\nUnit Test : addLast");
         for (int i = size; i > 0; i--) {
             deque.addLast(i);
         }
-        StdOut.println("Deque has " + deque.size() + " Nodes");
-        StdOut.println("\nUnit Test : addLast");
+        //StdOut.println("Deque has " + deque.size() + " Nodes");
+        //StdOut.println("\nUnit Test : addLast");
         for (int i : deque) {
-            StdOut.println(deque.removeFirst());
+            //StdOut.println(
+            deque.removeFirst();
         }
-        StdOut.println("Deque has " + deque.size() + " Nodes");
+        //StdOut.println("Deque has " + deque.size() + " Nodes");
 
-        StdOut.println(timer.elapsedTime());
+        return timer.elapsedTime();
     }
 }
