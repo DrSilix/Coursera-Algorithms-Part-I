@@ -15,6 +15,9 @@
  *  crap, it seems like the output time is quadratic, logarithmic then quadratic, and there's spikes????
  *  need to implement exceptions
  *  need to test nested iterators
+ *
+ *  to properly test method timing, create a deque of specified size and then time performing
+ *  exponential operations on it.
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.StdOut;
