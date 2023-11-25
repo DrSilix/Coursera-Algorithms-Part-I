@@ -64,12 +64,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     // construct an empty randomized queue
     public RandomizedQueue() {
         queue = (Item[]) new Object[INIT_CAPACITY];
-        last = 0;
+        last = -1;
         size = 0;
     }
 
     // is the randomized queue empty?
-    public boolean isEmpty() { return last == 0; }
+    public boolean isEmpty() { return size == 0; }
 
     // return the number of items on the randomized queue
     public int size() { return size; }
@@ -84,8 +84,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             Item temp = queue[i];
             queue[i] = item;
             queue[++last] = temp;
-        } else queue[last] = item;
-        //if (last == queue.length) { last = 0; }
+        } else queue[++last] = item;
         size++;
     }
 
@@ -94,8 +93,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         if (size == 0) throw new NoSuchElementException("Cannot call dequeue when RandomizedQueue is empty");
         if (size > INIT_CAPACITY && size <= queue.length/4) { resize(queue.length/2); }
         Item item = queue[last];
-        queue[last] = null;
-        if (last != 0) last--;
+        queue[last--] = null;
         size--;
         return item;
     }
@@ -131,7 +129,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
 
 
-        public boolean hasNext() { return current != 0 && size > 0; }
+        public boolean hasNext() { return current >= 0 && size > 0; }
         public void remove() { throw new UnsupportedOperationException("remove operation is no longer supported."); }
         public Item next() {
             if (!hasNext()) { throw new NoSuchElementException(); }
@@ -213,37 +211,40 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         results[3] = testEndTime;
         StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime/size + " seconds/entry - RandomizedQueue has " + rQueue.size() + " Nodes");
 
-        StdOut.println("\nUnit Test : calling random methods");
-        testStartTime = timer.elapsedTime();
-        int numMethodCalls = 0;
-        Iterator<Integer> iterator = rQueue.iterator();
-        for (int i = 1; i <= size * 10; i++) {
-            switch(StdRandom.uniformInt(6)) {
-                case 0:
-                    rQueue.enqueue(StdRandom.uniformInt(1000000) - 500000);
-                    break;
-                case 1:
-                    if (!rQueue.isEmpty()) rQueue.dequeue();
-                    break;
-                case 2:
-                    // second iterator
-                    for (int j : rQueue) {
-                        assert true;
-                    }
-                    break;
-                case 3:
-                    if (!rQueue.isEmpty()) rQueue.sample();
-                    break;
-                case 4:
-                    rQueue.size();
-                    break;
-                case 5:
-                    if (iterator.hasNext()) iterator.next();
+        if (performNonConstantOperations) {
+            StdOut.println("\nUnit Test : calling random methods");
+            testStartTime = timer.elapsedTime();
+            int numMethodCalls = 0;
+            Iterator<Integer> iterator = rQueue.iterator();
+            for (int i = 1; i <= size * 10; i++) {
+                switch (StdRandom.uniformInt(6)) {
+                    case 0:
+                        rQueue.enqueue(StdRandom.uniformInt(1000000) - 500000);
+                        iterator = rQueue.iterator();
+                        break;
+                    case 1:
+                        if (!rQueue.isEmpty()) rQueue.dequeue();
+                        break;
+                    case 2:
+                        // second iterator
+                        for (int j : rQueue) {
+                            assert true;
+                        }
+                        break;
+                    case 3:
+                        if (!rQueue.isEmpty()) rQueue.sample();
+                        break;
+                    case 4:
+                        rQueue.size();
+                        break;
+                    case 5:
+                        if (iterator.hasNext()) iterator.next();
+                }
             }
+            testEndTime = timer.elapsedTime() - testStartTime;
+            results[4] = testEndTime;
+            StdOut.println("Test completed in " + testEndTime);
         }
-        testEndTime = timer.elapsedTime() - testStartTime;
-        results[4] = testEndTime;
-        StdOut.println("Test completed in " + testEndTime);
 
         StdOut.println("\nResults: " + results[0] + "/" + results[1] + "/" + results[2] + "/" + results[3] + "/" + results[4] + " over " + timer.elapsedTime() + " seconds");
         StdOut.println("Result/element: " + results[0]/size + "/" + results[1]/size + "/" + results[2]/size + "/" + results[3]/size);
