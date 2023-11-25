@@ -56,6 +56,7 @@ public class Deque<Item> implements Iterable<Item> {
 
     // add the item to the front
     public void addFirst(Item item) {
+        if (item == null) throw new IllegalArgumentException("addFirst argument cannot be null.");
         Node oldFirst = first;
         first = new Node();
         first.item = item;
@@ -73,6 +74,7 @@ public class Deque<Item> implements Iterable<Item> {
 
     // add the item to the back
     public void addLast(Item item) {
+        if (item == null) throw new IllegalArgumentException("addLast argument cannot be null.");
         Node oldLast = last;
         last = new Node();
         last.item = item;
@@ -90,6 +92,7 @@ public class Deque<Item> implements Iterable<Item> {
 
     // remove and return the item from the front
     public Item removeFirst() {
+        if (isEmpty()) throw new NoSuchElementException("Cannot call removeFirst when Deque is empty.");
         Item item = first.item;
         first = first.next;
         if (first != null) { first.prev = null; }
@@ -100,6 +103,7 @@ public class Deque<Item> implements Iterable<Item> {
 
     // remove and return the item from the back
     public Item removeLast() {
+        if (isEmpty()) throw new NoSuchElementException("Cannot call removeLast when Deque is empty.");
         // this one will be difficult because the last node has no direct reference to the node before it
         Item item = last.item;
         last = last.prev;
@@ -119,7 +123,7 @@ public class Deque<Item> implements Iterable<Item> {
         private Node current = first;
 
         public boolean hasNext() { return current != null; }
-        public void remove() { /* not supported handler */ }
+        public void remove() { throw new UnsupportedOperationException("remove operation is no longer supported."); }
         public Item next() {
             if (!hasNext()) { throw new NoSuchElementException(); }
             Item item = current.item;
@@ -151,7 +155,8 @@ public class Deque<Item> implements Iterable<Item> {
             if (printLog) StdOut.println(printDeque(deque));
         }
         testEndTime = timer.elapsedTime() - testStartTime;
-        StdOut.println("Test completed in " + (results[0] = testEndTime) + " seconds or " + testEndTime/size + " seconds/entry - Deque has " + deque.size() + " Nodes");
+        results[0] = testEndTime;
+        StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime/size + " seconds/entry - Deque has " + deque.size() + " Nodes");
 
         if (performNonConstantOperations) {
             StdOut.println("\nUnit Test : iterator while full");
@@ -159,8 +164,8 @@ public class Deque<Item> implements Iterable<Item> {
             if (printLog) StdOut.println(printDeque(deque));
             else printDeque(deque);
             testEndTime = timer.elapsedTime() - testStartTime;
-            StdOut.println("Test completed in " + (results[1] = testEndTime) + " seconds or "
-                                   + testEndTime / size + " seconds/entry");
+            results[1] = testEndTime;
+            StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime / size + " seconds/entry");
         }
 
 
@@ -171,7 +176,8 @@ public class Deque<Item> implements Iterable<Item> {
             deque.removeLast();
         }
         testEndTime = timer.elapsedTime() - testStartTime;
-        StdOut.println("Test completed in " + (results[2] = testEndTime) + " seconds or " + testEndTime/size + " seconds/entry - Deque has " + deque.size() + " Nodes");
+        results[2] = testEndTime;
+        StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime/size + " seconds/entry - Deque has " + deque.size() + " Nodes");
 
 
         if (performNonConstantOperations) {
@@ -180,8 +186,8 @@ public class Deque<Item> implements Iterable<Item> {
             if (printLog) StdOut.println(printDeque(deque));
             else printDeque(deque);
             testEndTime = timer.elapsedTime() - testStartTime;
-            StdOut.println("Test completed in " + (results[3] = testEndTime) + " seconds or "
-                                   + testEndTime / size + " seconds/entry");
+            results[3] = testEndTime;
+            StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime / size + " seconds/entry");
         }
 
 
@@ -192,7 +198,8 @@ public class Deque<Item> implements Iterable<Item> {
             if (printLog) StdOut.println(printDeque(deque));
         }
         testEndTime = timer.elapsedTime() - testStartTime;
-        StdOut.println("Test completed in " + (results[4] = testEndTime) + " seconds or " + testEndTime/size + " seconds/entry - Deque has " + deque.size() + " Nodes");
+        results[4] = testEndTime;
+        StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime/size + " seconds/entry - Deque has " + deque.size() + " Nodes");
 
 
         if (performNonConstantOperations) {
@@ -206,9 +213,8 @@ public class Deque<Item> implements Iterable<Item> {
                 if (printLog) StdOut.println(output);
             }
             testEndTime = timer.elapsedTime() - testStartTime;
-            StdOut.println("Test completed in " + (results[5] = testEndTime) + " seconds or "
-                                   + testEndTime / size + " seconds/entry - Deque has "
-                                   + deque.size() + " Nodes");
+            results[5] = testEndTime;
+            StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime / size + " seconds/entry - Deque has " + deque.size() + " Nodes");
         }
 
 
@@ -219,7 +225,8 @@ public class Deque<Item> implements Iterable<Item> {
             deque.removeFirst();
         }
         testEndTime = timer.elapsedTime() - testStartTime;
-        StdOut.println("Test completed in " + (results[6] = testEndTime) + " seconds or " + testEndTime/size + " seconds/entry - Deque has " + deque.size() + " Nodes");
+        results[6] = testEndTime;
+        StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime/size + " seconds/entry - Deque has " + deque.size() + " Nodes");
 
         StdOut.println("\nResults: " + results[0] + "/" + results[1] + "/" + results[2] + "/" + results[3] + "/" + results[4] + "/" + results[5] + "/" + results[6] + " over " + timer.elapsedTime() + " seconds");
         StdOut.println("Result/element: " + results[0]/size + "/" + results[1]/size + "/" + results[2]/size + "/" + results[3]/size + "/" + results[4]/size + "/" + results[5]/size + "/" + results[6]/size);
