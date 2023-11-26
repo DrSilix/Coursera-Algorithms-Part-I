@@ -4,7 +4,7 @@
  *  Last modified:     11/25/2023
  *
  *  Compilation: javac-algs4 RandomizedQueue.java
- *  Execution: java-algs4 RandomizedQueue size verboseLog(Default: false) executeNonConstantOperations(Default: false)
+ *  Execution: java-algs4 RandomizedQueue size verboseLog(Default: true) executeNonConstantOperations(Default: true)
  *  Execution: java-algs4 RandomizedQueue 10
  *  Execution: java-algs4 RandomizedQueue 10 false true
  *
@@ -124,19 +124,22 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
 
-    // unit testing (required)
+    // unit testing
+    // param 1  (int): size of RandomizedQueue
+    // param 2 (bool): Prints the RandomizedQueue after each operation (Default: true)
+    // param 3 (bool): Performs non-constant time operations (Default: true)
     public static void main(String[] args) {
         Stopwatch timer = new Stopwatch();
         double testStartTime, testEndTime;
-        double[] results = new double[5];
+        double[] results = new double[7];
 
         int size = Integer.parseInt(args[0]);
-        boolean printLog = false, performNonConstantOperations = false;
+        boolean verboseLog = true, performNonConstantOperations = true;
 
         RandomizedQueue<Integer> rQueue = new RandomizedQueue<>();
         StringBuilder output;
 
-        if (args.length >= 2) printLog = Objects.equals(args[1].toUpperCase(), "TRUE");
+        if (args.length >= 2) verboseLog = Objects.equals(args[1].toUpperCase(), "TRUE");
         if (args.length == 3) performNonConstantOperations = Objects.equals(args[2].toUpperCase(), "TRUE");
 
 
@@ -144,7 +147,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         testStartTime = timer.elapsedTime();
         for (int i = 1; i <= size; i++) {
             rQueue.enqueue(i);
-            if (printLog) StdOut.println(printRandomizedQueue(rQueue));
+            if (verboseLog) StdOut.println(printRandomizedQueue(rQueue));
         }
         testEndTime = timer.elapsedTime() - testStartTime;
         results[0] = testEndTime;
@@ -152,10 +155,10 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
 
         if (performNonConstantOperations) {
-            StdOut.println("\nUnit Test : iterator while full");
+            StdOut.println("\nUnit Test : Iterator While Full");
             testStartTime = timer.elapsedTime();
             String iteratorResult = printRandomizedQueue(rQueue);
-            if (printLog) StdOut.println(iteratorResult);
+            if (verboseLog) StdOut.println(iteratorResult);
             testEndTime = timer.elapsedTime() - testStartTime;
             results[1] = testEndTime;
             StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime / size + " seconds/entry");
@@ -168,35 +171,59 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 output.append(rQueue.sample());
                 output.append("-");
             }
-            if (printLog) StdOut.println(output.substring(0, output.length() - 1));
+            if (verboseLog) StdOut.println(output.substring(0, output.length() - 1));
             testEndTime = timer.elapsedTime() - testStartTime;
             results[2] = testEndTime;
             StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime / size + " seconds/entry");
         }
 
 
+        if (performNonConstantOperations) {
+            StdOut.println("\nUnit Test : Nested Iterators");
+            testStartTime = timer.elapsedTime();
+            for (int p : rQueue) {
+                output = new StringBuilder(size * 4);
+                for (int q : rQueue) {
+                    if (verboseLog) output.append(p).append("-").append(q).append(" ");
+                }
+                if (verboseLog) StdOut.println(output);
+            }
+            testEndTime = timer.elapsedTime() - testStartTime;
+            results[3] = testEndTime;
+            StdOut.println("Test completed in " + testEndTime + " seconds");
+        }
+
+
         StdOut.println("\nUnit Test : dequeue");
-        testStartTime = timer.elapsedTime();
         output = new StringBuilder(size * 2);
-        for (int i = 1; i <= size; i++) {
-            if (printLog) {
+        testStartTime = timer.elapsedTime();
+        while (!rQueue.isEmpty()) {
+            if (verboseLog) {
                 StdOut.println(printRandomizedQueue(rQueue));
-                output.append(String.valueOf(rQueue.dequeue()));
-                if (i != size) output.append("-");
+                output.append(String.valueOf(rQueue.dequeue())).append("-");
             } else {
                 rQueue.dequeue();
             }
         }
-        if (printLog) StdOut.println(output.toString());
         testEndTime = timer.elapsedTime() - testStartTime;
-        results[3] = testEndTime;
+        results[4] = testEndTime;
+        if (output.length() >= 2) output.delete(output.length()-1, output.length());
+        if (verboseLog) StdOut.println("Dequeued items: " + output.toString());
         StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime/size + " seconds/entry - RandomizedQueue has " + rQueue.size() + " Nodes");
 
 
         if (performNonConstantOperations) {
-            StdOut.println("\nUnit Test : calling random methods");
+            StdOut.println("\nUnit Test : Iterator While Empty");
             testStartTime = timer.elapsedTime();
-            int numMethodCalls = 0;
+            String iteratorResult = printRandomizedQueue(rQueue);
+            if (verboseLog) StdOut.println(iteratorResult);
+            testEndTime = timer.elapsedTime() - testStartTime;
+            results[5] = testEndTime;
+            StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime / size + " seconds/entry");
+
+
+            StdOut.println("\nUnit Test : Calling Random Methods");
+            testStartTime = timer.elapsedTime();
             Iterator<Integer> iterator = rQueue.iterator();
             for (int i = 1; i <= size * 10; i++) {
                 switch (StdRandom.uniformInt(6)) {
@@ -224,12 +251,13 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 }
             }
             testEndTime = timer.elapsedTime() - testStartTime;
-            results[4] = testEndTime;
+            results[6] = testEndTime;
             StdOut.println("Test completed in " + testEndTime);
         }
 
-        StdOut.println("\nResults: " + results[0] + "/" + results[1] + "/" + results[2] + "/" + results[3] + "/" + results[4] + " over " + timer.elapsedTime() + " seconds");
-        StdOut.println("Result/element: " + results[0]/size + "/" + results[1]/size + "/" + results[2]/size + "/" + results[3]/size);
+
+        StdOut.println("\nResults: " + results[0] + "/" + results[1] + "/" + results[2] + "/" + results[3] + "/" + results[4] + "/" + results[5] + "/" + results[6] + " over " + timer.elapsedTime() + " seconds");
+        StdOut.println("Result/element: " + results[0]/size + "/" + results[1]/size + "/" + results[2]/size + "/" + results[3]/size + "/" + results[4]/size + "/" + results[5]/size + "/" + results[6]/size);
     }
 
 
@@ -239,6 +267,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             output.append(i);
             output.append("-");
         }
+        if (output.length() >= 2) output.delete(output.length()-1, output.length());
         return output.toString();
     }
 }
