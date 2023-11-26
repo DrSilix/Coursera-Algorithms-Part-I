@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<!-- saved from url=(0106)https://www.coursera.org/api/rest/v1/executorruns/richfeedback?id=3c9Mi4v2Ee6w9Q5jq1u-7Q&feedbackType=HTML -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Autograder Feedback</title>
+
+<link rel="stylesheet" href="./Autograder Feedback - submission 1_files/stylesheet"></head>
+
+<body>
+
+<p>
+<em>
+See the Assessment Guide for information on how to interpret this report.
+</em>
+<br><br>
+
+</p><h2>ASSESSMENT SUMMARY</h2>
+<pre>
+Compilation:  <font color="#009900">PASSED (0 errors, 3 warnings)</font>
+API:          <font color="#009900">PASSED</font>
+
+SpotBugs:     <font color="#990000">FAILED (3 warnings)</font>
+PMD:          <font color="#009900">PASSED</font>
+Checkstyle:   <font color="#990000">FAILED (2 errors, 0 warnings)</font>
+
+Correctness:  <font color="#009900">No tests available for autograding.</font>
+Memory:       <font color="#009900">No tests available for autograding.</font>
+Timing:       <font color="#009900">No tests available for autograding.</font>
+
+Aggregate score: 10.00%
+[ Compilation: 5%, API: 5%, Style: 0%, Correctness: 90% ]
+</pre>
+
+
+<br><br>
+
+<h2>ASSESSMENT DETAILS</h2>
+
+<pre>
+The following files were submitted:
+----------------------------------
+ 13K Nov 26 00:58 Deque.java
+1.4K Nov 26 00:58 Permutation.java
+ 12K Nov 26 00:58 RandomizedQueue.java
+
+
+********************************************************************************
+*  COMPILING                                                                    
+********************************************************************************
+
+
+% javac Deque.java
+*-----------------------------------------------------------
+
+% javac RandomizedQueue.java
+*-----------------------------------------------------------
+RandomizedQueue.java:44: warning: [unchecked] unchecked cast
+        queue = (Item[]) new Object[INIT_CAPACITY];
+                         ^
+  required: Item[]
+  found:    Object[]
+  where Item is a type-variable:
+    Item extends Object declared in class RandomizedQueue
+RandomizedQueue.java:85: warning: [unchecked] unchecked cast
+        queue = (Item[]) new Object[resize];
+                         ^
+  required: Item[]
+  found:    Object[]
+  where Item is a type-variable:
+    Item extends Object declared in class RandomizedQueue
+RandomizedQueue.java:105: warning: [unchecked] unchecked cast
+        private Item[] tempQueue = (Item[]) new Object[size];
+                                            ^
+  required: Item[]
+  found:    Object[]
+  where Item is a type-variable:
+    Item extends Object declared in class RandomizedQueue
+3 warnings
+
+% javac Permutation.java
+*-----------------------------------------------------------
+
+
+================================================================
+
+
+Checking the APIs of your programs.
+*-----------------------------------------------------------
+Deque:
+
+RandomizedQueue:
+
+Permutation:
+
+================================================================
+
+
+********************************************************************************
+*  CHECKING STYLE AND COMMON BUG PATTERNS                                       
+********************************************************************************
+
+
+% spotbugs *.class
+*-----------------------------------------------------------
+L D RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE RCN: Checks whether the variable 'last' is null, even though it is known to be non-null.  Redundant null check at Deque.java:[line 93]
+M D RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT RV: Calls the method 'size()' but ignores its return value. The method, however, does not produce any effect other than returning a value.  At Deque.java:[line 288]
+M D RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT RV: Calls the method 'size()' but ignores its return value. The method, however, does not produce any effect other than returning a value.  At RandomizedQueue.java:[line 247]
+SpotBugs ends with 3 warnings.
+
+
+================================================================
+
+
+% pmd .
+*-----------------------------------------------------------
+
+
+================================================================
+
+
+% checkstyle *.java
+*-----------------------------------------------------------
+
+% custom checkstyle checks for Deque.java
+*-----------------------------------------------------------
+Checkstyle ends with 1 errors.
+[ERROR] Deque.java:30:1: Do not import 'java.util.Objects' on this assignment. [IllegalImport]
+Checkstyle ends with 1 error and 0 warnings.
+
+% custom checkstyle checks for RandomizedQueue.java
+*-----------------------------------------------------------
+Checkstyle ends with 1 errors.
+[ERROR] RandomizedQueue.java:31:1: Do not import 'java.util.Objects' on this assignment. [IllegalImport]
+Checkstyle ends with 1 error and 0 warnings.
+
+% custom checkstyle checks for Permutation.java
+*-----------------------------------------------------------
+
+
+================================================================
+
+
+ABORTING: you must fix any Checkstyle errors (not warnings).
+</pre>
+
+
+</body></html>

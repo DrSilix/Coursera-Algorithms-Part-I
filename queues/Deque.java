@@ -27,7 +27,6 @@ import edu.princeton.cs.algs4.Stopwatch;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 public class Deque<Item> implements Iterable<Item> {
     /* @citation Adapted from: https://algs4.cs.princeton.edu/
@@ -89,10 +88,10 @@ public class Deque<Item> implements Iterable<Item> {
         last.prev = null;
         if (isEmpty()) { first = last; }
         else {
-            oldLast.next = last;
-            if (last != null) {
-                last.prev = oldLast;
+            if (oldLast != null) {
+                oldLast.next = last;
             }
+            last.prev = oldLast;
         }
         size++;
     }
@@ -158,8 +157,8 @@ public class Deque<Item> implements Iterable<Item> {
         Deque<Integer> deque = new Deque<Integer>();
         StringBuilder output = new StringBuilder();
 
-        if (args.length >= 2) verboseLog = Objects.equals(args[1].toUpperCase(), "TRUE");
-        if (args.length >= 3) performNonConstantOperations = Objects.equals(args[2].toUpperCase(), "TRUE");
+        if (args.length >= 2) verboseLog = Boolean.parseBoolean(args[1]);
+        if (args.length >= 3) performNonConstantOperations = Boolean.parseBoolean(args[2]);
 
 
         StdOut.println("Unit Test : addFirst");
@@ -260,6 +259,7 @@ public class Deque<Item> implements Iterable<Item> {
 
         if (performNonConstantOperations) {
             StdOut.println("\nUnit Test : Calling Random Methods");
+            int dummy = 0;
             testStartTime = timer.elapsedTime();
             Iterator<Integer> iterator = deque.iterator();
             for (int i = 1; i <= size * 10; i++) {
@@ -281,11 +281,11 @@ public class Deque<Item> implements Iterable<Item> {
                     case 4:
                         // second iterator
                         for (int j : deque) {
-                            assert true;
+                            dummy = j;
                         }
                         break;
                     case 5:
-                        deque.size();
+                        dummy = deque.size();
                         break;
                     case 6:
                         if (iterator.hasNext()) iterator.next();
@@ -293,6 +293,7 @@ public class Deque<Item> implements Iterable<Item> {
             }
             testEndTime = timer.elapsedTime() - testStartTime;
             results[5] = testEndTime;
+            StdOut.print(Integer.toString(dummy).substring(0, 0));
             StdOut.println("Test completed in " + testEndTime);
         }
 

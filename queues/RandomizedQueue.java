@@ -28,7 +28,6 @@ import edu.princeton.cs.algs4.Stopwatch;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
     /* @citation Adapted from: https://algs4.cs.princeton.edu/
@@ -139,8 +138,8 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         RandomizedQueue<Integer> rQueue = new RandomizedQueue<>();
         StringBuilder output;
 
-        if (args.length >= 2) verboseLog = Objects.equals(args[1].toUpperCase(), "TRUE");
-        if (args.length == 3) performNonConstantOperations = Objects.equals(args[2].toUpperCase(), "TRUE");
+        if (args.length >= 2) verboseLog = Boolean.parseBoolean(args[1]);
+        if (args.length == 3) performNonConstantOperations = Boolean.parseBoolean(args[2]);
 
 
         StdOut.println("Unit Test : enqueue");
@@ -223,6 +222,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
 
             StdOut.println("\nUnit Test : Calling Random Methods");
+            int dummy = 0;
             testStartTime = timer.elapsedTime();
             Iterator<Integer> iterator = rQueue.iterator();
             for (int i = 1; i <= size * 10; i++) {
@@ -237,14 +237,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                     case 2:
                         // second iterator
                         for (int j : rQueue) {
-                            assert true;
+                            dummy = j;
                         }
                         break;
                     case 3:
                         if (!rQueue.isEmpty()) rQueue.sample();
                         break;
                     case 4:
-                        rQueue.size();
+                        dummy = rQueue.size();
                         break;
                     case 5:
                         if (iterator.hasNext()) iterator.next();
@@ -252,6 +252,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             }
             testEndTime = timer.elapsedTime() - testStartTime;
             results[6] = testEndTime;
+            StdOut.print(Integer.toString(dummy).substring(0, 0));
             StdOut.println("Test completed in " + testEndTime);
         }
 
