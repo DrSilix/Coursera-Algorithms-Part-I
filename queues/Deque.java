@@ -1,23 +1,24 @@
 /* *****************************************************************************
- *  Name:
- *  Date:
- *  Description:
+ *  Name:              Alex Hackl
+ *  Coursera User ID:  alexhackl@live.com
+ *  Last modified:     11/25/2023
  *
- *  Requires
- *  Non-iterator operations      Constant worst-case time       (linked list)
- *  Iterator constructor         Constant worst-case time       (probably linked list)
- *  Other iterator operations    Constant worst-case time       (has next, next, remove)
- *  Non-iterator memory use      Linear in current # of items   (a linked list would be linear, an array list linear amortized??)
+ *  Compilation: javac-algs4 Deque.java
+ *  Execution: java-algs4 Deque size verboseLog(Default: false) executeNonConstantOperations(Default: false)
+ *  Execution: java-algs4 Deque 10
+ *  Execution: java-algs4 Deque 10 false true
+ *
+ *  A double-ended queue library that maintains a bidirectional linked-list queue of generic items.
+ *  Items may be added to the front or back of the queue and may also be removed from either.
+ *  Includes a front to back iterator
+ *
+ *  Performance Specs
+ *  Non-iterator operations      Constant worst-case time
+ *  Iterator constructor         Constant worst-case time
+ *  Other iterator operations    Constant worst-case time
+ *  Non-iterator memory use      Linear in current # of items
  *  Memory per iterator          Constant
  *
- *  pretty sure have to use linked list to get constant non-iterator operations time worst-case
- *
- *  crap, it seems like the output time is quadratic, logarithmic then quadratic, and there's spikes????
- *  need to implement exceptions
- *  need to test nested iterators
- *
- *  to properly test method timing, create a deque of specified size and then time performing
- *  exponential operations on it.
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.StdOut;
@@ -28,10 +29,13 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class Deque<Item> implements Iterable<Item> {
+    /* @citation Adapted from: https://algs4.cs.princeton.edu/
+     * 13stacks/Queue.java.html.  Accessed: 11/21/2023 */
+
     private int size;
     private Node first, last;
 
-    // construct an empty deque
+    // constructs an empty deque with a link to the next and previous node
     public Deque() {
         first = null;
         last = null;
@@ -49,12 +53,13 @@ public class Deque<Item> implements Iterable<Item> {
         return first == null || last == null;
     }
 
-    // return the number of items on the deque
+    // returns the number of items on the deque
     public int size() {
         return size;
     }
 
-    // add the item to the front
+    // adds the item to the front
+    // swaps a new blank item with the old first item then assigns the other to next or last respectively
     public void addFirst(Item item) {
         if (item == null) throw new IllegalArgumentException("addFirst argument cannot be null.");
         Node oldFirst = first;
@@ -72,7 +77,8 @@ public class Deque<Item> implements Iterable<Item> {
         size++;
     }
 
-    // add the item to the back
+    // adds the item to the back
+    // swaps a new blank item with the old last item then assigns the other to last or next respectively
     public void addLast(Item item) {
         if (item == null) throw new IllegalArgumentException("addLast argument cannot be null.");
         Node oldLast = last;
@@ -90,7 +96,8 @@ public class Deque<Item> implements Iterable<Item> {
         size++;
     }
 
-    // remove and return the item from the front
+    // removes and returns the item from the front
+    // sets the first item to its next item and returns it and removes that next items value for prev
     public Item removeFirst() {
         if (isEmpty()) throw new NoSuchElementException("Cannot call removeFirst when Deque is empty.");
         Item item = first.item;
@@ -101,7 +108,8 @@ public class Deque<Item> implements Iterable<Item> {
         return item;
     }
 
-    // remove and return the item from the back
+    // removes and returns the item from the back
+    // sets the last item to its prev item and returns it and removes that prev items value for next
     public Item removeLast() {
         if (isEmpty()) throw new NoSuchElementException("Cannot call removeLast when Deque is empty.");
         // this one will be difficult because the last node has no direct reference to the node before it
@@ -113,13 +121,15 @@ public class Deque<Item> implements Iterable<Item> {
         return item;
     }
 
-    // return an iterator over items in order from front to back
+    // returns an iterator over items in order from front to back
     public Iterator<Item> iterator() {
         return new DequeIterator();
     }
 
-    // need to understand this more
+    // returns items in the queue from front to back
     private class DequeIterator implements Iterator<Item> {
+        /* @citation Copied from: https://algs4.cs.princeton.edu/
+         * 13stacks/Queue.java.html.  Accessed: 11/21/2023 */
         private Node current = first;
 
         public boolean hasNext() { return current != null; }
@@ -132,37 +142,40 @@ public class Deque<Item> implements Iterable<Item> {
         }
     }
 
-    // unit testing (required)
+    // unit testing
+    // param 1: size of Deque
+    // param 2: Prints the Deque after each operation (Default: false)
+    // param 3: Performs non-constant time operations (Default: false)
     public static void main(String[] args) {
         Stopwatch timer = new Stopwatch();
-        int size = Integer.parseInt(args[0]);
-        boolean printLog = false, performNonConstantOperations = false;
-        Deque<Integer> deque = new Deque<Integer>();
         double testStartTime, testEndTime;
         double[] results = new double[7];
 
-        if (args.length == 2) {
-            printLog = Objects.equals(args[1].toUpperCase(), "TRUE");
-        }
-        if (args.length == 3) {
-            performNonConstantOperations = Objects.equals(args[2].toUpperCase(), "TRUE");
-        }
+        int size = Integer.parseInt(args[0]);
+        boolean verboseLog = false, performNonConstantOperations = false;
+
+        Deque<Integer> deque = new Deque<Integer>();
+
+        if (args.length >= 2) verboseLog = Objects.equals(args[1].toUpperCase(), "TRUE");
+        if (args.length >= 3) performNonConstantOperations = Objects.equals(args[2].toUpperCase(), "TRUE");
+
 
         StdOut.println("Unit Test : addFirst");
         testStartTime = timer.elapsedTime();
         for (int i = 1; i <= size; i++) {
             deque.addFirst(i);
-            if (printLog) StdOut.println(printDeque(deque));
+            if (verboseLog) StdOut.println(printDeque(deque));
         }
         testEndTime = timer.elapsedTime() - testStartTime;
         results[0] = testEndTime;
         StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime/size + " seconds/entry - Deque has " + deque.size() + " Nodes");
 
+
         if (performNonConstantOperations) {
             StdOut.println("\nUnit Test : iterator while full");
             testStartTime = timer.elapsedTime();
-            if (printLog) StdOut.println(printDeque(deque));
-            else printDeque(deque);
+            String iteratorResult = printDeque(deque);
+            if (verboseLog) StdOut.println(iteratorResult);
             testEndTime = timer.elapsedTime() - testStartTime;
             results[1] = testEndTime;
             StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime / size + " seconds/entry");
@@ -172,7 +185,7 @@ public class Deque<Item> implements Iterable<Item> {
         StdOut.println("\nUnit Test : removeLast");
         testStartTime = timer.elapsedTime();
         while (!deque.isEmpty()) {
-            if (printLog) StdOut.println(printDeque(deque));
+            if (verboseLog) StdOut.println(printDeque(deque));
             deque.removeLast();
         }
         testEndTime = timer.elapsedTime() - testStartTime;
@@ -183,8 +196,8 @@ public class Deque<Item> implements Iterable<Item> {
         if (performNonConstantOperations) {
             StdOut.println("\nUnit Test : iterator while empty");
             testStartTime = timer.elapsedTime();
-            if (printLog) StdOut.println(printDeque(deque));
-            else printDeque(deque);
+            String iteratorResult = printDeque(deque);
+            if (verboseLog) StdOut.println(iteratorResult);
             testEndTime = timer.elapsedTime() - testStartTime;
             results[3] = testEndTime;
             StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime / size + " seconds/entry");
@@ -195,7 +208,7 @@ public class Deque<Item> implements Iterable<Item> {
         testStartTime = timer.elapsedTime();
         for (int i = size; i > 0; i--) {
             deque.addLast(i);
-            if (printLog) StdOut.println(printDeque(deque));
+            if (verboseLog) StdOut.println(printDeque(deque));
         }
         testEndTime = timer.elapsedTime() - testStartTime;
         results[4] = testEndTime;
@@ -206,11 +219,11 @@ public class Deque<Item> implements Iterable<Item> {
             StdOut.println("\nUnit Test : Nested Iterators");
             testStartTime = timer.elapsedTime();
             for (int p : deque) {
-                String output = "";
+                StringBuilder output = new StringBuilder();
                 for (int q : deque) {
-                    if (printLog) output += p + " - " + q + "  ";
+                    if (verboseLog) output.append(p).append(" - ").append(q).append(" ");
                 }
-                if (printLog) StdOut.println(output);
+                if (verboseLog) StdOut.println(output);
             }
             testEndTime = timer.elapsedTime() - testStartTime;
             results[5] = testEndTime;
@@ -221,7 +234,7 @@ public class Deque<Item> implements Iterable<Item> {
         StdOut.println("\nUnit Test : removeFirst");
         testStartTime = timer.elapsedTime();
         for (int i : deque) {
-            if (printLog) StdOut.println(printDeque(deque));
+            if (verboseLog) StdOut.println(printDeque(deque));
             deque.removeFirst();
         }
         testEndTime = timer.elapsedTime() - testStartTime;
@@ -233,11 +246,11 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     private static String printDeque(Deque<Integer> deque) {
-        String output = "";
+        StringBuilder output = new StringBuilder();
         for (int i : deque) {
-            output += i + " - ";
+            output.append(i).append(" - ");
         }
-        if (output.length() > 2) output = output.substring(0, output.length() - 2);
-        return output;
+        if (output.length() > 2) output.delete(output.length()-2, output.length());
+        return output.toString();
     }
 }

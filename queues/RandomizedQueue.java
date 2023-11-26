@@ -1,50 +1,25 @@
 /* *****************************************************************************
- *  Name:
- *  Date:
- *  Description:
+ *  Name:              Alex Hackl
+ *  Coursera User ID:  alexhackl@live.com
+ *  Last modified:     11/25/2023
  *
- *  requirements
+ *  Compilation: javac-algs4 RandomizedQueue.java
+ *  Execution: java-algs4 RandomizedQueue size verboseLog(Default: false) executeNonConstantOperations(Default: false)
+ *  Execution: java-algs4 RandomizedQueue 10
+ *  Execution: java-algs4 RandomizedQueue 10 false true
+ *
+ *  A queue that dequeues, iterates, and samples uniformly at random using a resizing array of generic items.
+ *  Items may be enqueued to random position, and they are dequeued from the end and returned.
+ *  Also supports sampling a random item without removing and iterating through in a uniquely random order.
+ *  When the array is full it is doubled in size, and when it's 1/4 full it is halved in size.
+ *
+ *  Performance specs
  *  Non-iterator operations     Constant amortized time
  *  Iterator constructor        linear in current # of items
  *  Other iterator operations   Constant worst-case time
  *  Non-iterator memory use     Linear in current # of items
  *  Memory per iterator         Linear in current # of items
  *
- *  pretty sure have to use array-list in order to randomly access the array, linked list would
- *  only allow you to go in order
- *
- *  actually this will be a hybrid array linked list. as items are enqueued they are added to the end
- *  as they are dequeued they are removed at RANDOM. (a bonus the first will always be 0 unless it's picked?)
- *  this will leave not only the end of the array empty but holes in it. I'll loop through the array and optimize
- *  it when the last entry reaches the end (possibly resize at the same time to be efficient). When the
- *  size reaches 1/4 I'll reduce and optimize. Anyway the linked list part of this is that each array element
- *  is either null or has a node with has a link to the next element. This will allow efficient
- *  iteration and resizing. When choosing a random number it will be based on a seed and repeat until you
- *  get an element not null between first and last.
- *
- *  okay.. two solutions
- *  1. hybrid linked list and array
- *      -for random access it just uses a random index
- *      -keep track of blank spaces with a bidirectional linked list layout
- *      -cons
- *          -need to store a whole wrapper object instead of just the incoming object
- *              -aside from teh object overhead it would only also be storing two integers
- *          -would need to optimize the array
- *  2. array
- *      -uses shuffle for randomization instead of grabbing a random index grab last
- *      -cons
- *          -to output a random item you would need to shuffle the array (even if it was shuffled, if a new item was added
- *              -unless if you add items in random positions (swap new item with random index)
- *          -iterator would need to copy the array and shuffle to remain unique per iterator yet consistent
- *
- * ... would you need to shuffle the array?? just always add randomly
- * remove randomly would just remove last
- * iterator could possibly be tricked, pick a random index and start there??? (multiple iterators would overlap eventually)
- *      -what about starting at random index, store new first/last, flip coin on whether to take the next value from first or last (could they wrap??)
- *
- * make a copy of the array, store last
- * pick a random index, swap with last
- * output and decrement last
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.StdOut;
@@ -56,12 +31,15 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
+    /* @citation Adapted from: https://algs4.cs.princeton.edu/
+     * 13stacks/ResizingArrayQueue.java.html.  Accessed: 11/21/2023 */
+
     private static final int INIT_CAPACITY = 8;
 
     private Item[] queue;
     private int last, size;
 
-    // construct an empty randomized queue
+    // constructs an empty randomized queue (array-list) of size 8
     public RandomizedQueue() {
         queue = (Item[]) new Object[INIT_CAPACITY];
         last = -1;
@@ -71,10 +49,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     // is the randomized queue empty?
     public boolean isEmpty() { return size == 0; }
 
-    // return the number of items on the randomized queue
+    // returns the number of items on the randomized queue
     public int size() { return size; }
 
-    // add the item
+    // add the item, handles resizing if array is full
+    // items are added to a uniformly random index and the existing item at that index is moved to the end
     public void enqueue(Item item) {
         if (item == null) throw new IllegalArgumentException("Argument cannot be null.");
         // check if last is the same as the length then optimize
@@ -88,16 +67,18 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         size++;
     }
 
-    // remove and return a random item
+    // remove and return a random item, handles resizing if array becomes 1/4 full
+    // simply removes the last item in the array and returns it
     public Item dequeue() {
         if (size == 0) throw new NoSuchElementException("Cannot call dequeue when RandomizedQueue is empty");
-        if (size > INIT_CAPACITY && size <= queue.length/4) { resize(queue.length/2); }
         Item item = queue[last];
         queue[last--] = null;
         size--;
+        if (size > INIT_CAPACITY && size <= queue.length/4) { resize(queue.length/2); }
         return item;
     }
 
+    // resizes the array, checks that the provided size is not below INIT_CAPACITY
     private void resize(int resize) {
         if (resize < INIT_CAPACITY) { resize = INIT_CAPACITY; }
         Item[] temp = queue;
@@ -107,17 +88,19 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
     }
 
-    // return a random item (but do not remove it)
+    // returns a random item (but does not remove it)
     public Item sample() {
         if (size == 0) throw new NoSuchElementException("Cannot call sample when RandomizedQueue is empty.");
         return queue[StdRandom.uniformInt(size)];
     }
 
-    // return an independent iterator over items in random order
+    // returns an independent iterator over items in random order
     public Iterator<Item> iterator() {
         return new RandomQIterator();
     }
 
+    // array is copied to handle overlapping iterators
+    // next works on the copy by choosing a random index and moving it to the end and pointing to a new last
     private class RandomQIterator implements Iterator<Item> {
         private Item[] tempQueue = (Item[]) new Object[size];
         private int current = last;
@@ -127,7 +110,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
                 tempQueue[i] = queue[i];
             }
         }
-
 
         public boolean hasNext() { return current >= 0 && size > 0; }
         public void remove() { throw new UnsupportedOperationException("remove operation is no longer supported."); }
@@ -141,22 +123,21 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
     }
 
+
     // unit testing (required)
     public static void main(String[] args) {
         Stopwatch timer = new Stopwatch();
-        int size = Integer.parseInt(args[0]);
-        boolean printLog = false, performNonConstantOperations = false;
-        RandomizedQueue<Integer> rQueue = new RandomizedQueue<>();
         double testStartTime, testEndTime;
         double[] results = new double[5];
+
+        int size = Integer.parseInt(args[0]);
+        boolean printLog = false, performNonConstantOperations = false;
+
+        RandomizedQueue<Integer> rQueue = new RandomizedQueue<>();
         StringBuilder output;
 
-        if (args.length >= 2) {
-            printLog = Objects.equals(args[1].toUpperCase(), "TRUE");
-        }
-        if (args.length == 3) {
-            performNonConstantOperations = Objects.equals(args[2].toUpperCase(), "TRUE");
-        }
+        if (args.length >= 2) printLog = Objects.equals(args[1].toUpperCase(), "TRUE");
+        if (args.length == 3) performNonConstantOperations = Objects.equals(args[2].toUpperCase(), "TRUE");
 
 
         StdOut.println("Unit Test : enqueue");
@@ -210,6 +191,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         testEndTime = timer.elapsedTime() - testStartTime;
         results[3] = testEndTime;
         StdOut.println("Test completed in " + testEndTime + " seconds or " + testEndTime/size + " seconds/entry - RandomizedQueue has " + rQueue.size() + " Nodes");
+
 
         if (performNonConstantOperations) {
             StdOut.println("\nUnit Test : calling random methods");
