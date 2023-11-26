@@ -1,3 +1,4 @@
 # ignore intelliJ folder
 .idea/
 .lift/
+lib/

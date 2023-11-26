@@ -16,5 +16,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="algs4" level="project" />
+    <orderEntry type="library" exported="" name="apache.commons.math3" level="project" />
+    <orderEntry type="library" exported="" name="openjdk.jol.core" level="project" />
   </component>
 </module>

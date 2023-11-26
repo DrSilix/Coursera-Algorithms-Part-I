@@ -58,10 +58,11 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         // check if last is the same as the length then optimize
         if (size == queue.length) { resize(2 * queue.length); }
         if (size != 0) {
-            int i = StdRandom.uniformInt(size);
+            int i = StdRandom.uniformInt(size + 1);
             Item temp = queue[i];
             queue[i] = item;
-            queue[++last] = temp;
+            if (temp != null) queue[++last] = temp;
+            else last++;
         } else queue[++last] = item;
         size++;
     }
@@ -73,13 +74,13 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         Item item = queue[last];
         queue[last--] = null;
         size--;
-        if (size > INIT_CAPACITY && size <= queue.length/4) { resize(queue.length/2); }
+        if (size <= queue.length/4) { resize(queue.length/2); }
         return item;
     }
 
     // resizes the array, checks that the provided size is not below INIT_CAPACITY
     private void resize(int resize) {
-        if (resize < INIT_CAPACITY) { resize = INIT_CAPACITY; }
+        if (resize < 1) { return; }
         Item[] temp = queue;
         queue = (Item[]) new Object[resize];
         for (int i = 0; i < size; i++) {
