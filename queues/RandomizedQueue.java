@@ -1,7 +1,7 @@
 /* *****************************************************************************
  *  Name:              Alex Hackl
  *  Coursera User ID:  alexhackl@live.com
- *  Last modified:     11/25/2023
+ *  Last modified:     11/26/2023
  *
  *  Compilation: javac-algs4 RandomizedQueue.java
  *  Execution: java-algs4 RandomizedQueue size verboseLog(Default: true) executeNonConstantOperations(Default: true)
@@ -78,7 +78,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         return item;
     }
 
-    // resizes the array, checks that the provided size is not below INIT_CAPACITY
+    // resizes the array
     private void resize(int resize) {
         if (resize < 1) { return; }
         Item[] temp = queue;

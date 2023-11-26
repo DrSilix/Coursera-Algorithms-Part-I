@@ -1,7 +1,7 @@
 /* *****************************************************************************
  *  Name:              Alex Hackl
  *  Coursera User ID:  alexhackl@live.com
- *  Last modified:     11/25/2023
+ *  Last modified:     11/26/2023
  *
  *  Compilation: javac-algs4 Deque.java
  *  Execution: java-algs4 Deque size verboseLog(Default: true) executeNonConstantOperations(Default: true)
