@@ -31,5 +31,11 @@ public class Test {
                 StdOut.println(myPoints[i] + " " + myPoints[j] + ": " + points[i].slopeTo(points[j]) + " - " + points[i].compareTo(points[j]));
             }
         }
+
+        StdOut.println(points[0].toString() + ", " + points[1].toString());
+        StdOut.println(points[0].slopeTo(points[1]));
+        StdOut.println(points[0].toString() + ", " + points[2].toString());
+        StdOut.println(points[0].slopeTo(points[2]));
+        StdOut.println(points[0].slopeOrder().compare(points[1], points[2]));
     }
 }

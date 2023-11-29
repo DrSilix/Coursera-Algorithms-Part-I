@@ -14,6 +14,8 @@ public class BruteCollinearPoints {
     private int numberOfSegments = 0;
     private LineSegment[] segments;
 
+    // TODO verify I'm only iterating through all combinations of points
+    // TODO optimize on the basis that you don't need to check the remaining slopes if the first 2-3 aren't collinear
     // finds all line segments containing 4 points, constructor
     public BruteCollinearPoints(Point[] points)  {
         if (points == null || points.length < 4) { throw new IllegalArgumentException("at least 4 points must be provided"); }
@@ -34,6 +36,7 @@ public class BruteCollinearPoints {
                         if (ijSlope != imSlope) { break; }
                         segments[numberOfSegments] = new LineSegment(points[i], points[m]);
                         numberOfSegments++;
+                        StdOut.println(points[i].toString() + " > " + points[j].toString() + " > " + points[k].toString() + " > " + points[m].toString());
                         if (numberOfSegments == segments.length) { resizeArray(numberOfSegments * 2); }
                     }
                 }
@@ -65,7 +68,6 @@ public class BruteCollinearPoints {
     }
 
     public static void main(String[] args) {
-
         // read the n points from a file
         In in = new In(args[0]);
         int n = in.readInt();
@@ -80,6 +82,7 @@ public class BruteCollinearPoints {
         StdDraw.enableDoubleBuffering();
         StdDraw.setXscale(0, 32768);
         StdDraw.setYscale(0, 32768);
+        StdDraw.setPenRadius(0.006);
         for (Point p : points) {
             p.draw();
         }
@@ -87,6 +90,7 @@ public class BruteCollinearPoints {
 
         // print and draw the line segments
         BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        StdDraw.setPenRadius(0.002);
         for (LineSegment segment : collinear.segments()) {  // TODO where is this iterator???
             StdOut.println(segment);
             segment.draw();
