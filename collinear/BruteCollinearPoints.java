@@ -9,27 +9,37 @@ import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
 public class BruteCollinearPoints {
+    private static final int INIT_CAPACITY = 8;
+
     private int numberOfSegments = 0;
-    // TODO I have to initialize something to hold the line segments
+    private LineSegment[] segments;
 
     // finds all line segments containing 4 points, constructor
     public BruteCollinearPoints(Point[] points)  {
-        // meat and potatoes
-        if (points.length < 4) { return; }
+        if (points == null || points.length < 4) { throw new IllegalArgumentException("at least 4 points must be provided"); }
 
-        for (int i = 0; i < points.length - 1; i++) {
+        segments = new LineSegment[INIT_CAPACITY];
+
+        for (int i = 0; i < points.length - 3; i++) {
             for (int j = i + 1; j < points.length - 2; j++) {
-                for (int k = j + 1; k < points.length - 3; k++) {
-                    for (int m = k + 1; m < points.length - 4; m++) {
+                for (int k = j + 1; k < points.length - 1; k++) {
+                    for (int m = k + 1; m < points.length; m++) {
                         double ijSlope = points[i].slopeTo(points[j]);
-                        if (ijSlope != points[i].slopeTo(points[k])) { break; }
-                        if (ijSlope != points[i].slopeTo(points[m])) { break; }
+                        double ikSlope = points[i].slopeTo(points[k]);
+                        double imSlope = points[i].slopeTo(points[m]);
+                        if (ijSlope == Double.NEGATIVE_INFINITY || ikSlope == Double.NEGATIVE_INFINITY || imSlope == Double.NEGATIVE_INFINITY) {
+                            throw new IllegalArgumentException("Duplicate points are not allowed");
+                        }
+                        if (ijSlope != ikSlope) { break; }
+                        if (ijSlope != imSlope) { break; }
+                        segments[numberOfSegments] = new LineSegment(points[i], points[m]);
                         numberOfSegments++;
-                        // TODO store the line segment from point i to m
+                        if (numberOfSegments == segments.length) { resizeArray(numberOfSegments * 2); }
                     }
                 }
             }
         }
+        if (segments.length != numberOfSegments) { resizeArray(numberOfSegments); }
 
     }
 
@@ -39,8 +49,19 @@ public class BruteCollinearPoints {
 
     // the line segments
     public LineSegment[] segments() {
-        // object array of found 4 point line segments, this is the result to be printed
-        // TODO wtf is this???
+        return segments;
+    }
+
+    private void resizeArray(int size) {
+        LineSegment[] temp = segments;
+        segments = new LineSegment[size];
+        for (int i = 0; i < numberOfSegments; i++) {
+            segments[i] = temp[i];
+        }
+    }
+
+    private void validatePoint(Point p) {
+        if (p == null) { throw new IllegalArgumentException("Point cannot be null"); }
     }
 
     public static void main(String[] args) {
