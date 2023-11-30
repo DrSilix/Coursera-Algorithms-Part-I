@@ -7,6 +7,7 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Stopwatch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,14 +26,15 @@ public class FastCollinearPoints {
 
         for (int i = 0; i < points.length - 4; i++) {
             Point p = points[i];
-            StdOut.println(p.toString());
-            Arrays.sort(points, i, points.length - 1, p.slopeOrder()); // TODO no need to recheck already checked p points, sort a subset of array
-            ArrayList<Point> collinearPoints = new ArrayList<Point>();;
-            double prevSlope = points[i].slopeTo(points[i + 1]);
+            // StdOut.println(p.toString());
+            Arrays.sort(points, i+1, points.length, p.slopeOrder());
+            ArrayList<Point> collinearPoints = new ArrayList<Point>();
+            double prevSlope = -999; // points[i].slopeTo(points[i + 1]);
+            // StdOut.println(points[i+1].toString() + " - " + prevSlope);
             boolean wasCollinear = false;
-            for (int j = i; j < points.length; j++) {
+            for (int j = i + 1; j < points.length; j++) {
                 double slope = points[i].slopeTo(points[j]);
-                StdOut.println(points[j].toString() + " - " + slope);
+                // StdOut.println(points[j].toString() + " - " + slope);
 
                 // start of collinear segment
                 if (!wasCollinear && slope == prevSlope) {
@@ -40,25 +42,26 @@ public class FastCollinearPoints {
                     collinearPoints = new ArrayList<Point>();
                     collinearPoints.add(points[i]); // add the parent point
                     collinearPoints.add(points[j-1]); // add the previous point
-                    collinearPoints.add(points[j]); // add this point
                 }
 
                 // middle of collinear segment
-                if (wasCollinear && slope == prevSlope) collinearPoints.add(points[j]);
+                if (wasCollinear && slope == prevSlope) {
+                    collinearPoints.add(points[j]);
+                }
 
                 // end of collinear segment
-                if (wasCollinear && slope != prevSlope) {
+                if (wasCollinear && (slope != prevSlope || j == points.length-1)) {
                     wasCollinear = false;
                     if (collinearPoints.size() >= 4) {
                         Point[] sortedTemp = collinearPoints.toArray(new Point[0]);
                         Arrays.sort(sortedTemp);
                         segmentsByPoints.add(new LineSegmentPoints(sortedTemp[0], sortedTemp[sortedTemp.length-1]));
-                        //segments.add(sortAndBuildSegment(collinearPoints.toArray(new Point[0])));
+                        // segments.add(sortAndBuildSegment(collinearPoints.toArray(new Point[0])));
                     }
                 }
                 prevSlope = slope;
             }
-            StdOut.println("----------------");
+            // StdOut.println("----------------");
         }
         if (segmentsByPoints.size() > 0) removeDuplicateSegments(segmentsByPoints.toArray(new LineSegmentPoints[0]));
     }
@@ -68,6 +71,9 @@ public class FastCollinearPoints {
         segments.add(new LineSegment(segmentsByPoints[0].first, segmentsByPoints[0].last));
         for (int i = 1; i < segmentsByPoints.length; i++) {
             if (segmentsByPoints[i - 1].getLast() != segmentsByPoints[i].getLast()) {
+                segments.add(new LineSegment(segmentsByPoints[i].first, segmentsByPoints[i].last));
+            }
+            else if (segmentsByPoints[i-1].getSlope() != segmentsByPoints[i].getSlope()) {
                 segments.add(new LineSegment(segmentsByPoints[i].first, segmentsByPoints[i].last));
             }
         }
@@ -83,6 +89,7 @@ public class FastCollinearPoints {
         if (points == null || points.length < 4) { throw new IllegalArgumentException("at least 4 points must be provided"); }
         Arrays.sort(points);
         for (int i = 1; i < points.length; i++) {
+            if (points[i] == null) { throw new IllegalArgumentException("Point cannot be null"); }
             if (points[i-1].compareTo(points[i]) == 0) { throw new IllegalArgumentException("Duplicate points are not allowed"); }
         }
     }
@@ -97,6 +104,7 @@ public class FastCollinearPoints {
 
         public Point getFirst() { return first; }
         public Point getLast() { return last; }
+        public double getSlope() { return first.slopeTo(last); }
 
         public int compareTo(LineSegmentPoints that) {
             return last.compareTo(that.last);
@@ -125,8 +133,10 @@ public class FastCollinearPoints {
         }
         StdDraw.show();
 
+        Stopwatch timer = new Stopwatch();
         // print and draw the line segments
         FastCollinearPoints collinear = new FastCollinearPoints(points);
+        StdOut.println(timer.elapsedTime());
 
         StdDraw.setPenRadius(0.002);
         for (LineSegment segment : collinear.segments()) {

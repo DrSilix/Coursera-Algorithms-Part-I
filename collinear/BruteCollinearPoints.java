@@ -18,6 +18,7 @@ public class BruteCollinearPoints {
 
     // TODO verify I'm only iterating through all combinations of points
     // TODO optimize on the basis that you don't need to check the remaining slopes if the first 2-3 aren't collinear
+    // TODO guess this solution doesn't work at least on the input100.txt I tested before ending for the day
     // finds all line segments containing 4 points, constructor
     public BruteCollinearPoints(Point[] points)  {
         if (points == null || points.length < 4) { throw new IllegalArgumentException("at least 4 points must be provided"); }
