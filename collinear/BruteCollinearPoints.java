@@ -8,6 +8,8 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.Arrays;
+
 public class BruteCollinearPoints {
     private static final int INIT_CAPACITY = 8;
 
@@ -34,7 +36,9 @@ public class BruteCollinearPoints {
                         }
                         if (ijSlope != ikSlope) { break; }
                         if (ijSlope != imSlope) { break; }
-                        segments[numberOfSegments] = new LineSegment(points[i], points[m]);
+                        Point[] temp = new Point[]{points[i], points[j], points[k], points[m]};
+                        Arrays.sort(temp);
+                        segments[numberOfSegments] = new LineSegment(temp[0], temp[temp.length-1]);
                         numberOfSegments++;
                         StdOut.println(points[i].toString() + " > " + points[j].toString() + " > " + points[k].toString() + " > " + points[m].toString());
                         if (numberOfSegments == segments.length) { resizeArray(numberOfSegments * 2); }

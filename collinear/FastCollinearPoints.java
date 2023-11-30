@@ -21,12 +21,13 @@ public class FastCollinearPoints {
 
         numberOfSegments = 0;
         segments = new ArrayList<LineSegment>();
+        ArrayList<LineSegmentPoints> segmentsByPoints = new ArrayList<LineSegmentPoints>();
 
-        for (int i = 0; i < points.length; i++) {
+        for (int i = 0; i < points.length - 4; i++) {
             Point p = points[i];
             StdOut.println(p.toString());
             Arrays.sort(points, i, points.length - 1, p.slopeOrder()); // TODO no need to recheck already checked p points, sort a subset of array
-            ArrayList<Point> collinearPoints;
+            ArrayList<Point> collinearPoints = new ArrayList<Point>();;
             double prevSlope = points[i].slopeTo(points[i + 1]);
             boolean wasCollinear = false;
             for (int j = i; j < points.length; j++) {
@@ -49,23 +50,27 @@ public class FastCollinearPoints {
                 if (wasCollinear && slope != prevSlope) {
                     wasCollinear = false;
                     if (collinearPoints.size() >= 4) {
-                        segments.add(sortAndBuildSegment(collinearPoints.toArray(new Point[0])));
+                        Point[] sortedTemp = collinearPoints.toArray(new Point[0]);
+                        Arrays.sort(sortedTemp);
+                        segmentsByPoints.add(new LineSegmentPoints(sortedTemp[0], sortedTemp[sortedTemp.length-1]));
+                        //segments.add(sortAndBuildSegment(collinearPoints.toArray(new Point[0])));
                     }
                 }
                 prevSlope = slope;
             }
             StdOut.println("----------------");
         }
-        removeDuplicateSegments();
+        if (segmentsByPoints.size() > 0) removeDuplicateSegments(segmentsByPoints.toArray(new LineSegmentPoints[0]));
     }
 
-    private LineSegment sortAndBuildSegment(Point[] points) {
-        Arrays.sort(points);
-        return new LineSegment(points[0], points[points.length-1]);
-    }
-
-    private void removeDuplicateSegments() {
-        Arrays.sort(segments);
+    private void removeDuplicateSegments(LineSegmentPoints[] segmentsByPoints) {
+        Arrays.sort(segmentsByPoints);
+        segments.add(new LineSegment(segmentsByPoints[0].first, segmentsByPoints[0].last));
+        for (int i = 1; i < segmentsByPoints.length; i++) {
+            if (segmentsByPoints[i - 1].getLast() != segmentsByPoints[i].getLast()) {
+                segments.add(new LineSegment(segmentsByPoints[i].first, segmentsByPoints[i].last));
+            }
+        }
     }
 
     // the number of line segments
@@ -79,6 +84,22 @@ public class FastCollinearPoints {
         Arrays.sort(points);
         for (int i = 1; i < points.length; i++) {
             if (points[i-1].compareTo(points[i]) == 0) { throw new IllegalArgumentException("Duplicate points are not allowed"); }
+        }
+    }
+
+    private class LineSegmentPoints implements Comparable<LineSegmentPoints> {
+        private Point first, last;
+
+        public LineSegmentPoints(Point a, Point b) {
+            first = a;
+            last = b;
+        }
+
+        public Point getFirst() { return first; }
+        public Point getLast() { return last; }
+
+        public int compareTo(LineSegmentPoints that) {
+            return last.compareTo(that.last);
         }
     }
 
@@ -98,6 +119,7 @@ public class FastCollinearPoints {
         StdDraw.enableDoubleBuffering();
         StdDraw.setXscale(0, 32768);
         StdDraw.setYscale(0, 32768);
+        StdDraw.setPenRadius(0.006);
         for (Point p : points) {
             p.draw();
         }
@@ -106,7 +128,8 @@ public class FastCollinearPoints {
         // print and draw the line segments
         FastCollinearPoints collinear = new FastCollinearPoints(points);
 
-        for (LineSegment segment : collinear.segments()) {  // TODO where is this iterator???
+        StdDraw.setPenRadius(0.002);
+        for (LineSegment segment : collinear.segments()) {
             StdOut.println(segment);
             segment.draw();
         }
