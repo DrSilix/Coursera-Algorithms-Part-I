@@ -72,9 +72,11 @@ public class FastCollinearPoints {
         for (int i = 1; i < segmentsByPoints.length; i++) {
             if (segmentsByPoints[i - 1].getLast() != segmentsByPoints[i].getLast()) {
                 segments.add(new LineSegment(segmentsByPoints[i].first, segmentsByPoints[i].last));
+                numberOfSegments++;
             }
             else if (segmentsByPoints[i-1].getSlope() != segmentsByPoints[i].getSlope()) {
                 segments.add(new LineSegment(segmentsByPoints[i].first, segmentsByPoints[i].last));
+                numberOfSegments++;
             }
         }
     }
@@ -107,7 +109,14 @@ public class FastCollinearPoints {
         public double getSlope() { return first.slopeTo(last); }
 
         public int compareTo(LineSegmentPoints that) {
-            return last.compareTo(that.last);
+            int c = last.compareTo(that.last);
+            if (c == 0) {
+                double thi = first.slopeTo(last);
+                double tha = that.first.slopeTo(that.last);
+                if (thi > tha) c = 1;
+                if (thi < tha) c = -1;
+            }
+            return c;
         }
     }
 
