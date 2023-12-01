@@ -8,22 +8,18 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BruteCollinearPoints {
-    private static final int INIT_CAPACITY = 8;
 
     private int numberOfSegments = 0;
-    private LineSegment[] segments;
+    private ArrayList<LineSegment> segments;
 
-    // TODO verify I'm only iterating through all combinations of points
-    // TODO optimize on the basis that you don't need to check the remaining slopes if the first 2-3 aren't collinear
-    // TODO guess this solution doesn't work at least on the input100.txt I tested before ending for the day
     // finds all line segments containing 4 points, constructor
     public BruteCollinearPoints(Point[] points)  {
         if (points == null || points.length < 4) { throw new IllegalArgumentException("at least 4 points must be provided"); }
-
-        segments = new LineSegment[INIT_CAPACITY];
+        segments = new ArrayList<LineSegment>();
 
         // loop through every unique combination of 4 points
         for (int i = 0; i < points.length - 3; i++) {
@@ -37,23 +33,19 @@ public class BruteCollinearPoints {
                     for (int m = k + 1; m < points.length; m++) {
                         double imSlope = points[i].slopeTo(points[m]);
                         if (ijSlope == Double.NEGATIVE_INFINITY || ikSlope == Double.NEGATIVE_INFINITY || imSlope == Double.NEGATIVE_INFINITY) {
-                            throw new IllegalArgumentException("Duplicate points are not allowed");
+                            throw new IllegalArgumentException("Duplicate points are not allowed"); // the slope of two points is only -Infinity if they are the same
                         }
                         if (ijSlope != imSlope) { continue; }
 
-                        // Add collinear segment of 4 points
+                        // Add collinear segment of 4 points, order the points
                         Point[] temp = new Point[]{points[i], points[j], points[k], points[m]};
                         Arrays.sort(temp);
-                        segments[numberOfSegments] = new LineSegment(temp[0], temp[temp.length-1]);
+                        segments.add(new LineSegment(temp[0], temp[temp.length-1]));
                         numberOfSegments++;
-                        StdOut.println(points[i].toString() + " > " + points[j].toString() + " > " + points[k].toString() + " > " + points[m].toString());
-                        if (numberOfSegments == segments.length) { resizeArray(numberOfSegments * 2); }
                     }
                 }
             }
         }
-        if (segments.length != numberOfSegments) { resizeArray(numberOfSegments); }
-
     }
 
     // the number of line segments
@@ -62,15 +54,7 @@ public class BruteCollinearPoints {
 
     // the line segments
     public LineSegment[] segments() {
-        return segments;
-    }
-
-    private void resizeArray(int size) {
-        LineSegment[] temp = segments;
-        segments = new LineSegment[size];
-        for (int i = 0; i < numberOfSegments; i++) {
-            segments[i] = temp[i];
-        }
+        return segments.toArray(new LineSegment[0]);
     }
 
     private void validatePoint(Point p) {
