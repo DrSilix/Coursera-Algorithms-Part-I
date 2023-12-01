@@ -25,20 +25,23 @@ public class BruteCollinearPoints {
 
         segments = new LineSegment[INIT_CAPACITY];
 
-        Arrays.sort(points);
-
+        // loop through every unique combination of 4 points
         for (int i = 0; i < points.length - 3; i++) {
             for (int j = i + 1; j < points.length - 2; j++) {
+                double ijSlope = points[i].slopeTo(points[j]);
+
                 for (int k = j + 1; k < points.length - 1; k++) {
+                    double ikSlope = points[i].slopeTo(points[k]);
+                    if (ijSlope != ikSlope) { continue; } // optimization to bail early if 3 points are not collinear
+
                     for (int m = k + 1; m < points.length; m++) {
-                        double ijSlope = points[i].slopeTo(points[j]);
-                        double ikSlope = points[i].slopeTo(points[k]);
                         double imSlope = points[i].slopeTo(points[m]);
                         if (ijSlope == Double.NEGATIVE_INFINITY || ikSlope == Double.NEGATIVE_INFINITY || imSlope == Double.NEGATIVE_INFINITY) {
                             throw new IllegalArgumentException("Duplicate points are not allowed");
                         }
-                        if (ijSlope != ikSlope) { break; }
-                        if (ijSlope != imSlope) { break; }
+                        if (ijSlope != imSlope) { continue; }
+
+                        // Add collinear segment of 4 points
                         Point[] temp = new Point[]{points[i], points[j], points[k], points[m]};
                         Arrays.sort(temp);
                         segments[numberOfSegments] = new LineSegment(temp[0], temp[temp.length-1]);
