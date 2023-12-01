@@ -7,7 +7,6 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.Stopwatch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,15 +25,13 @@ public class FastCollinearPoints {
 
         for (int i = 0; i < points.length - 4; i++) {
             Point p = points[i];
-            // StdOut.println(p.toString());
             Arrays.sort(points, i+1, points.length, p.slopeOrder());
             ArrayList<Point> collinearPoints = new ArrayList<Point>();
-            double prevSlope = -999; // points[i].slopeTo(points[i + 1]);
-            // StdOut.println(points[i+1].toString() + " - " + prevSlope);
+            double prevSlope = -999;
             boolean wasCollinear = false;
+
             for (int j = i + 1; j < points.length; j++) {
                 double slope = points[i].slopeTo(points[j]);
-                // StdOut.println(points[j].toString() + " - " + slope);
 
                 // start of collinear segment
                 if (!wasCollinear && slope == prevSlope) {
@@ -56,12 +53,10 @@ public class FastCollinearPoints {
                         Point[] sortedTemp = collinearPoints.toArray(new Point[0]);
                         Arrays.sort(sortedTemp);
                         segmentsByPoints.add(new LineSegmentPoints(sortedTemp[0], sortedTemp[sortedTemp.length-1]));
-                        // segments.add(sortAndBuildSegment(collinearPoints.toArray(new Point[0])));
                     }
                 }
                 prevSlope = slope;
             }
-            // StdOut.println("----------------");
         }
         if (segmentsByPoints.size() > 0) removeDuplicateSegments(segmentsByPoints.toArray(new LineSegmentPoints[0]));
     }
@@ -70,11 +65,9 @@ public class FastCollinearPoints {
         Arrays.sort(segmentsByPoints);
         segments.add(new LineSegment(segmentsByPoints[0].first, segmentsByPoints[0].last));
         for (int i = 1; i < segmentsByPoints.length; i++) {
-            if (segmentsByPoints[i - 1].getLast() != segmentsByPoints[i].getLast()) {
-                segments.add(new LineSegment(segmentsByPoints[i].first, segmentsByPoints[i].last));
-                numberOfSegments++;
-            }
-            else if (segmentsByPoints[i-1].getSlope() != segmentsByPoints[i].getSlope()) {
+            // check for unequal last points, or equal last points and unequal slopes
+            if (segmentsByPoints[i - 1].getLast() != segmentsByPoints[i].getLast() ||
+                    segmentsByPoints[i - 1].getSlope() != segmentsByPoints[i].getSlope()) {
                 segments.add(new LineSegment(segmentsByPoints[i].first, segmentsByPoints[i].last));
                 numberOfSegments++;
             }
@@ -104,18 +97,12 @@ public class FastCollinearPoints {
             last = b;
         }
 
-        public Point getFirst() { return first; }
         public Point getLast() { return last; }
         public double getSlope() { return first.slopeTo(last); }
 
         public int compareTo(LineSegmentPoints that) {
             int c = last.compareTo(that.last);
-            if (c == 0) {
-                double thi = first.slopeTo(last);
-                double tha = that.first.slopeTo(that.last);
-                if (thi > tha) c = 1;
-                if (thi < tha) c = -1;
-            }
+            if (c == 0) c = Double.compare(first.slopeTo(last), that.first.slopeTo(that.last));
             return c;
         }
     }
@@ -142,10 +129,10 @@ public class FastCollinearPoints {
         }
         StdDraw.show();
 
-        Stopwatch timer = new Stopwatch();
+        // Stopwatch timer = new Stopwatch();
         // print and draw the line segments
         FastCollinearPoints collinear = new FastCollinearPoints(points);
-        StdOut.println(timer.elapsedTime());
+        // StdOut.println(timer.elapsedTime());
 
         StdDraw.setPenRadius(0.002);
         for (LineSegment segment : collinear.segments()) {
