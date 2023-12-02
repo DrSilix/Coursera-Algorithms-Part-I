@@ -64,6 +64,7 @@ public class FastCollinearPoints {
     private void removeDuplicateSegments(LineSegmentPoints[] segmentsByPoints) {
         Arrays.sort(segmentsByPoints);
         segments.add(new LineSegment(segmentsByPoints[0].first, segmentsByPoints[0].last));
+        numberOfSegments++;
         for (int i = 1; i < segmentsByPoints.length; i++) {
             // check for unequal last points, or equal last points and unequal slopes
             if (segmentsByPoints[i - 1].getLast() != segmentsByPoints[i].getLast() ||
