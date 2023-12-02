@@ -48,8 +48,8 @@ public class Test {
                     int n = Integer.parseInt(args[1]);
                     Point[] points = new Point[n];
                     for (int j = 0; j < n; j++) {
-                        int x = StdRandom.uniformInt(1000) * 32;
-                        int y = StdRandom.uniformInt(1000) * 32;
+                        int x = StdRandom.uniformInt(3276) * 10 + 4;
+                        int y = StdRandom.uniformInt(3276) * 10 + 4;
                         points[j] = new Point(x, y);
                     }
                     runTestOnPoints(points, false, true);
@@ -73,13 +73,13 @@ public class Test {
 
                 for (int i = 0; i < trials; i++) {
                     ArrayList<Point> points = new ArrayList<Point>();
-                    int x = StdRandom.uniformInt(1000) * 10;
-                    int y = StdRandom.uniformInt(1000) * 10;
+                    int x = StdRandom.uniformInt(3276);
+                    int y = StdRandom.uniformInt(3276);
                     int winCon = 0;
                     points.add(new Point(x, y));
                     while (winCon == 0) {
-                        x = StdRandom.uniformInt(1000) * 10;
-                        y = StdRandom.uniformInt(1000) * 10;
+                        x = StdRandom.uniformInt(3276);
+                        y = StdRandom.uniformInt(3276);
                         points.add(new Point(x, y));
                         winCon = runTestOnPoints(points.toArray(new Point[0]), true, false);
                     }
