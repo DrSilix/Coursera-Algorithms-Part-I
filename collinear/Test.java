@@ -62,6 +62,7 @@ public class Test {
                     StdDraw.clear();
                 }
             }
+
             if (args[0].toLowerCase().equals("montecarlo")) {
                 int trials = Integer.parseInt(args[1]);
                 ArrayList<Double> resultsList = new ArrayList<Double>();
@@ -103,6 +104,78 @@ public class Test {
                 confHi = mean + confidenceLevel95;
 
                 StdOut.println("sample size: " + results.length + " / mean: " + mean + " / stddev: " + stddev + " / 95% confidence interval = [" + confLo + ", " + confHi + "]");
+
+            }
+
+            if (args[0].toLowerCase().equals("montecarlomultiseg")) {
+                int trials = Integer.parseInt(args[1]);
+                double[][] results2d = new double[10][trials];
+                int numberOfSuccessfulTrials = 0;
+
+                for (int i = 0; i < trials; i++) {
+                    ArrayList<Point> points = new ArrayList<Point>();
+                    int x = StdRandom.uniformInt(1000);
+                    int y = StdRandom.uniformInt(1000);
+                    int winCon = 0;
+                    points.add(new Point(x, y));
+                    while (winCon < 10) {
+                        x = StdRandom.uniformInt(1000);
+                        y = StdRandom.uniformInt(1000);
+                        points.add(new Point(x, y));
+                        int temp = runTestOnPoints(points.toArray(new Point[0]), true, false);
+                        if (temp == -1) break;
+                        if (temp > 10) temp = 10;
+                        if (temp != winCon) {
+                            for (int q = winCon; q < temp; q++) {
+                                if (results2d[q][i] == 0) {
+                                    results2d[q][i] = points.size();
+                                    StdOut.println(
+                                            "segment " + q + " found at point " + points.size());
+                                }
+                            }
+                            winCon = temp;
+                        }
+                    }
+                    if (winCon > 9) {
+                        // results2d.add((double) points.size());
+                        // StdOut.println("3rd 4+ point collinear segment found at " + points.size()
+                                              // + " points");
+                        StdOut.println("Trial Success");
+                        numberOfSuccessfulTrials++;
+                    } else {
+                        StdOut.println("Trial Failure");
+                    }
+                }
+
+                double[][] results = new double[10][numberOfSuccessfulTrials];
+                int successIndex;
+                for (int i = 0; i < 10; i++) {
+                    successIndex = 0;
+                    for (int j = 0; j < numberOfSuccessfulTrials; j++, successIndex++) {
+                        while (successIndex != results2d[9].length-1 && results2d[9][successIndex] <= 0)
+                            successIndex++;
+                        results[i][j] = results2d[i][successIndex];
+                    }
+                }
+
+                for (int i = 0; i < 10; i++) {
+                    double[] r = results[i];
+
+                    double mean;
+                    double stddev;
+                    double confidenceLevel95;
+                    double confLo, confHi;
+
+                    mean = StdStats.mean(r);
+                    stddev = StdStats.stddev(r);
+                    confidenceLevel95 = (1.96 * stddev) / Math.sqrt(trials);
+                    confLo = mean - confidenceLevel95;
+                    confHi = mean + confidenceLevel95;
+                    StdOut.println(
+                            "sample size: " + r.length + " / mean: " + mean + " / stddev: "
+                                    + stddev + " / 95% confidence interval = [" + confLo + ", "
+                                    + confHi + "]");
+                }
 
             }
         }
@@ -157,7 +230,7 @@ public class Test {
                 StdOut.println(points.length + " points, " + fast.numberOfSegments() + "/" + numBrutePoints + " segments");
             }
 
-            if (fast.numberOfSegments() > 2) return 1;
+            if (fast.numberOfSegments() > 0) return fast.numberOfSegments();
         }
         catch (IllegalArgumentException e) {
             if (e.getMessage().equals("at least 4 points must be provided")) {

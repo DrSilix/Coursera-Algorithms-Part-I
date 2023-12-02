@@ -52,7 +52,7 @@ public class TestMonteCarloParallelCompute {
 
         // ExecutorService exec = Executors.newCachedThreadPool();
         // some other exectuors you could try to see the different behaviours
-        ExecutorService exec = Executors.newFixedThreadPool(24);
+        ExecutorService exec = Executors.newFixedThreadPool(12);
         // ExecutorService exec = Executors.newSingleThreadExecutor();
         ArrayList<Double> resultsList = new ArrayList<Double>();
         try {
@@ -81,18 +81,18 @@ public class TestMonteCarloParallelCompute {
 
     public static Result compute(Object obj) throws InterruptedException {
         ArrayList<Point> points = new ArrayList<Point>();
-        int x = StdRandom.uniformInt(3276);
-        int y = StdRandom.uniformInt(3276);
+        int x = StdRandom.uniformInt(1000);
+        int y = StdRandom.uniformInt(1000);
         int winCon = 0;
         points.add(new Point(x, y));
         while (winCon == 0) {
-            x = StdRandom.uniformInt(3276);
-            y = StdRandom.uniformInt(3276);
+            x = StdRandom.uniformInt(1000);
+            y = StdRandom.uniformInt(1000);
             points.add(new Point(x, y));
             winCon = runTestOnPoints(points.toArray(new Point[0]));
         }
         if (winCon == 1) {
-            StdOut.println("3rd 4+ point collinear segment found at " + points.size()
+            StdOut.println("10th 4+ point collinear segment found at " + points.size()
                                    + " points");
             return new Result((double) points.size());
         } else {
@@ -106,7 +106,7 @@ public class TestMonteCarloParallelCompute {
 
         try {
             FastCollinearPoints fast = new FastCollinearPoints(points);
-            if (fast.numberOfSegments() > 2) return 1;
+            if (fast.numberOfSegments() > 9) return 1;
         }
         catch (IllegalArgumentException e) {
             if (e.getMessage().equals("at least 4 points must be provided")) {
