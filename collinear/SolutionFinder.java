@@ -75,6 +75,9 @@ public class SolutionFinder {
     // the number of line segments
     public int numberOfSegments() { return numberOfSegments; }
 
+    // the number of line segments
+    public int solutionNumberOfSegments() { return solutionNumberOfSegments; }
+
 
     // the line segments
     public LineSegmentPoints[] segments() {
@@ -113,6 +116,7 @@ public class SolutionFinder {
         }
 
         segmentsByPoints = segments.toArray(segments.toArray(new LineSegmentPoints[0]));
+        solutionNumberOfSegments = numberOfSegments;
 
         for (int i = 0; i < segmentsByPoints.length; i++) {
             Point parentFirst = segmentsByPoints[i].getFirst();
@@ -132,6 +136,7 @@ public class SolutionFinder {
                     if (shit) {
                         StdOut.println("You dun fuked up! " + segmentsByPoints[i].toString() + ", "
                                                + segmentsByPoints[j].toString());
+                        solutionNumberOfSegments--;
                     }
                 }
             }
@@ -217,5 +222,6 @@ public class SolutionFinder {
         StdDraw.show();
 
         StdOut.println(collinear.numberOfSegments());
+        StdOut.println("Should be " + collinear.solutionNumberOfSegments());
     }
 }

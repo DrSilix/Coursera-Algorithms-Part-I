@@ -1,10 +1,11 @@
 /* *****************************************************************************
  *  Name:              Alex Hackl
  *  Coursera User ID:  alexhackl@live.com
- *  Last modified:     12/2/2023
+ *  Last modified:     12/3/2023
  *
  *  Compilation: javac-algs4 BruteCollinearPoints.java
  *  Execution: java-algs4 BruteCollinearPoints input8.txt
+ *  Dependencies: Point.java, LineSegment.java
  *
  *  Library that takes standard input of a collection of points or direct instantiation
  *  and method calls and uses a brute force method to determine segments of exactly 4
@@ -117,6 +118,7 @@ public class BruteCollinearPoints {
 
         // print and draw the line segments
         BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+
         StdDraw.setPenRadius(0.002);
         for (LineSegment segment : collinear.segments()) {  // TODO where is this iterator???
             StdOut.println(segment);
