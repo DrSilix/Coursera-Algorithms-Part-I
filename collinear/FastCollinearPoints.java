@@ -77,10 +77,13 @@ public class FastCollinearPoints {
                 if (!wasCollinear && slope == prevSlope) {
                     wasCollinear = true;
                     startIndex = j-1;
-                    // collinearPoints = new ArrayList<Point>();
-                    // collinearPoints.add(p); // add the parent point
-                    // collinearPoints.add(points[j-1]); // add the previous point
                 }
+                /* if (!wasCollinear && slope == prevSlope) {
+                    wasCollinear = true;
+                    collinearPoints = new ArrayList<Point>();
+                    collinearPoints.add(p); // add the parent point
+                    collinearPoints.add(points[j-1]); // add the previous point
+                }*/
 
                 // middle of collinear segment. Records current point
                 /* if (wasCollinear && slope == prevSlope) {
@@ -94,40 +97,33 @@ public class FastCollinearPoints {
                     int length = ((endIndex + 1) - startIndex) + 1;
                     wasCollinear = false;
                     if (length >= 4) {
-                        boolean inOrder = true;
+                        boolean parentIsLeast = true;
                         for (int m = startIndex; m <= endIndex; m++) {
-                            if (p.compareTo(points[m]) > 0) inOrder = false;
+                            if (p.compareTo(points[m]) > 0) parentIsLeast = false;
                         }
-                        if (inOrder) {
+                        if (parentIsLeast) {
+                            Arrays.sort(points, startIndex, endIndex + 1);
                             segments.add(new LineSegment(p, points[endIndex]));
                             numberOfSegments++;
                         }
                     }
                 }
-                        // Point[] sortedTemp = new Point[length];
-                       /* sortedTemp[0] = p;
-                        for (int m = 1, k = startIndex; m < sortedTemp.length; m++, k++) {
-                            sortedTemp[m] = points[k];
-                        }
-                        // Point firstBeforeSort = sortedTemp[0];
-                        Arrays.sort(sortedTemp);    // points are sorted to get true first and last point
-                        Point firstAfterSort = sortedTemp[0];
-                        if (p == firstAfterSort) {
-                            segments.add(new LineSegment(sortedTemp[0], sortedTemp[sortedTemp.length - 1]));
-                            numberOfSegments++;
-                        }
-                    }*/
-                    /* if (collinearPoints.size() >= 4) {
+                /* if (wasCollinear && (slope != prevSlope || j == points.length-1)) {
+                    wasCollinear = false;
+                    if (collinearPoints.size() >= 4) {
                         Point[] sortedTemp = collinearPoints.toArray(new Point[0]);
                         Point firstBeforeSort = sortedTemp[0];
-                        Arrays.sort(sortedTemp);    // points are sorted to get true first and last point
+                        Arrays.sort(
+                                sortedTemp);    // points are sorted to get true first and last point
                         Point firstAfterSort = sortedTemp[0];
                         if (firstBeforeSort == firstAfterSort) {
-                            segments.add(new LineSegment(sortedTemp[0], sortedTemp[sortedTemp.length - 1]));
+                            segments.add(new LineSegment(sortedTemp[0],
+                                                         sortedTemp[sortedTemp.length - 1]));
                             numberOfSegments++;
                         }
                         // segmentsByPoints.add(new LineSegmentPoints(sortedTemp[0], sortedTemp[sortedTemp.length-1], sortedTemp.length));
-                    }*/
+                    }
+                }*/
                 prevSlope = slope;
             }
         }
