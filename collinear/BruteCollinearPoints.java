@@ -42,7 +42,7 @@ public class BruteCollinearPoints {
     // loops through each unique combination of 4 points and determines if they are
     // collinear
     public BruteCollinearPoints(Point[] points)  {
-        if (points == null || points.length < 4) { throw new IllegalArgumentException("at least 4 points must be provided"); }
+        if (points == null) { throw new IllegalArgumentException("points cannot be null"); }
         segments = new ArrayList<LineSegment>();
 
         validatePoint(points[0]); // validate first 3 points
@@ -53,17 +53,18 @@ public class BruteCollinearPoints {
         for (int i = 0; i < points.length - 3; i++) {
             for (int j = i + 1; j < points.length - 2; j++) {
                 double ijSlope = points[i].slopeTo(points[j]);
+                if (ijSlope == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException("Duplicate points are not allowed");
 
                 for (int k = j + 1; k < points.length - 1; k++) {
+                    if (i == 0 && j == 1) validatePoint(points[k]); // validate points only on first pass
                     double ikSlope = points[i].slopeTo(points[k]);
+                    if (ikSlope == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException("Duplicate points are not allowed");
                     if (ijSlope != ikSlope) { continue; } // optimization to bail early if 3 points are not collinear
 
                     for (int m = k + 1; m < points.length; m++) {
                         if (i == 0) validatePoint(points[m]); // validate points only on first pass
                         double imSlope = points[i].slopeTo(points[m]);
-                        if (ijSlope == Double.NEGATIVE_INFINITY || ikSlope == Double.NEGATIVE_INFINITY || imSlope == Double.NEGATIVE_INFINITY) {
-                            throw new IllegalArgumentException("Duplicate points are not allowed"); // the slope of two points is only -Infinity if they are the same
-                        }
+                        if (imSlope == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException("Duplicate points are not allowed");
                         if (ijSlope != imSlope) { continue; }
 
                         // Add collinear segment of 4 points, order the points

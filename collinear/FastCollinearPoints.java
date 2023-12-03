@@ -54,6 +54,7 @@ public class FastCollinearPoints {
 
             for (int j = i + 1; j < points.length; j++) {
                 double slope = points[i].slopeTo(points[j]);
+                if (slope == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException("Duplicate points are not allowed");
 
                 // start of collinear segment. Records parent and prev point
                 if (!wasCollinear && slope == prevSlope) {
@@ -108,12 +109,14 @@ public class FastCollinearPoints {
 
     // Loops through provided array of points and checks for null points or duplicates
     private void validatePoints(Point[] points) {
-        // if (points == null || points.length < 4) { throw new IllegalArgumentException("at least 4 points must be provided"); }     // this check is not within specification
-        Arrays.sort(points);
-        for (int i = 1; i < points.length; i++) {
+        if (points == null) { throw new IllegalArgumentException("points cannot be null"); }
+        for (int i = 0; i < points.length; i++) {
             if (points[i] == null) { throw new IllegalArgumentException("Point cannot be null"); }
-            if (points[i-1].compareTo(points[i]) == 0) { throw new IllegalArgumentException("Duplicate points are not allowed"); }
         }
+        /* Arrays.sort(points);
+        for (int i = 1; i < points.length; i++) {
+            if (points[i-1].compareTo(points[i]) == 0) { throw new IllegalArgumentException("Duplicate points are not allowed"); }
+        }*/
     }
 
     // Line segment object which stores the first and last point as accessible and contains a comparable

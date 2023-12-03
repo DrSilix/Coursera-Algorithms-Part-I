@@ -48,18 +48,23 @@ public class Test {
                     int n = Integer.parseInt(args[1]);
                     Point[] points = new Point[n];
                     for (int j = 0; j < n; j++) {
+                        if (StdRandom.uniformInt(10000) == 1) {
+                            points[j] = null;
+                            continue;
+                        }
                         int x = StdRandom.uniformInt(3276) * 10 + 4;
                         int y = StdRandom.uniformInt(3276) * 10 + 4;
                         points[j] = new Point(x, y);
                     }
-                    runTestOnPoints(points, false, true);
+                    points = null;
+                    runTestOnPoints(points, false, false);
                     try {
                         Thread.sleep(2000);
                     }
                     catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    StdDraw.clear();
+                    // StdDraw.clear();
                 }
             }
 
@@ -201,7 +206,8 @@ public class Test {
             StdDraw.show();
         }
 
-        try {
+        // try {
+
             FastCollinearPoints fast = new FastCollinearPoints(points);
 
             if (drawResults) {
@@ -235,7 +241,7 @@ public class Test {
             }
 
             if (fast.numberOfSegments() > 0) return fast.numberOfSegments();
-        }
+        /* }
         catch (IllegalArgumentException e) {
             if (e.getMessage().equals("at least 4 points must be provided")) {
                 return 0;
@@ -243,7 +249,7 @@ public class Test {
                 // e.printStackTrace();
                 return -1;
             }
-        }
+        }*/
         return 0;
     }
 
