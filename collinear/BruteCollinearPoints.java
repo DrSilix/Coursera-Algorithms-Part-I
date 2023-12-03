@@ -1,7 +1,29 @@
 /* *****************************************************************************
- *  Name:
- *  Date:
- *  Description:
+ *  Name:              Alex Hackl
+ *  Coursera User ID:  alexhackl@live.com
+ *  Last modified:     12/2/2023
+ *
+ *  Compilation: javac-algs4 BruteCollinearPoints.java
+ *  Execution: java-algs4 BruteCollinearPoints input8.txt
+ *
+ *  Library that takes standard input of a collection of points or direct instantiation
+ *  and method calls and uses a brute force method to determine segments of exactly 4
+ *  collinear points. Points must not contain duplicates or nulls.
+ *
+ *  For collinear segments of 5+ points each overlapping segment of 4 will be recorded
+ *  and drawn.
+ *
+ *  Standard Input formatting:
+ *  input4.txt
+ *  4
+ *  1000 1000
+ *  2000 2000
+ *  3000 3000
+ *  4000 4000
+ *
+ *  % java-algs4 BruteCollinearPoints input8.txt
+ *  (10000, 0) -> (0, 10000)
+ *  (3000, 4000) -> (20000, 21000)
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.In;
@@ -16,10 +38,16 @@ public class BruteCollinearPoints {
     private int numberOfSegments = 0;
     private ArrayList<LineSegment> segments;
 
-    // finds all line segments containing 4 points, constructor
+    // finds all line segments containing exactly 4 points
+    // loops through each unique combination of 4 points and determines if they are
+    // collinear
     public BruteCollinearPoints(Point[] points)  {
         if (points == null || points.length < 4) { throw new IllegalArgumentException("at least 4 points must be provided"); }
         segments = new ArrayList<LineSegment>();
+
+        validatePoint(points[0]); // validate first 3 points
+        validatePoint(points[1]); // 4th for loop will do the rest
+        validatePoint(points[2]);
 
         // loop through every unique combination of 4 points
         for (int i = 0; i < points.length - 3; i++) {
@@ -31,6 +59,7 @@ public class BruteCollinearPoints {
                     if (ijSlope != ikSlope) { continue; } // optimization to bail early if 3 points are not collinear
 
                     for (int m = k + 1; m < points.length; m++) {
+                        if (i == 0) validatePoint(points[m]); // validate points only on first pass
                         double imSlope = points[i].slopeTo(points[m]);
                         if (ijSlope == Double.NEGATIVE_INFINITY || ikSlope == Double.NEGATIVE_INFINITY || imSlope == Double.NEGATIVE_INFINITY) {
                             throw new IllegalArgumentException("Duplicate points are not allowed"); // the slope of two points is only -Infinity if they are the same
@@ -57,10 +86,13 @@ public class BruteCollinearPoints {
         return segments.toArray(new LineSegment[0]);
     }
 
+    // validate points are not null
     private void validatePoint(Point p) {
         if (p == null) { throw new IllegalArgumentException("Point cannot be null"); }
     }
 
+    // Unit test for BruteCollinearPoints. Takes in standard input collection of points, draws them
+    // to the screen, then finds and draws each collinear segment of exactly 4 points
     public static void main(String[] args) {
         // read the n points from a file
         In in = new In(args[0]);
