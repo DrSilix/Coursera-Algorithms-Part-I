@@ -44,28 +44,21 @@ public class BruteCollinearPoints {
     // collinear
     public BruteCollinearPoints(Point[] points)  {
         if (points == null) { throw new IllegalArgumentException("points cannot be null"); }
+        validatePoints(points);
         segments = new ArrayList<LineSegment>();
-
-        validatePoint(points[0]); // validate first 3 points
-        validatePoint(points[1]); // 4th for loop will do the rest
-        validatePoint(points[2]);
+        if (points.length < 4) return;
 
         // loop through every unique combination of 4 points
         for (int i = 0; i < points.length - 3; i++) {
             for (int j = i + 1; j < points.length - 2; j++) {
                 double ijSlope = points[i].slopeTo(points[j]);
-                if (ijSlope == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException("Duplicate points are not allowed");
 
                 for (int k = j + 1; k < points.length - 1; k++) {
-                    if (i == 0 && j == 1) validatePoint(points[k]); // validate points only on first pass
                     double ikSlope = points[i].slopeTo(points[k]);
-                    if (ikSlope == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException("Duplicate points are not allowed");
                     if (ijSlope != ikSlope) { continue; } // optimization to bail early if 3 points are not collinear
 
                     for (int m = k + 1; m < points.length; m++) {
-                        if (i == 0) validatePoint(points[m]); // validate points only on first pass
                         double imSlope = points[i].slopeTo(points[m]);
-                        if (imSlope == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException("Duplicate points are not allowed");
                         if (ijSlope != imSlope) { continue; }
 
                         // Add collinear segment of 4 points, order the points
@@ -88,9 +81,17 @@ public class BruteCollinearPoints {
         return segments.toArray(new LineSegment[0]);
     }
 
-    // validate points are not null
-    private void validatePoint(Point p) {
-        if (p == null) { throw new IllegalArgumentException("Point cannot be null"); }
+    // Loops through copy of array of points and checks for null points or duplicates
+    private void validatePoints(Point[] points) {
+        Point[] copy = new Point[points.length];
+        for (int i = 0; i < points.length; i++) {
+            copy[i] = points[i];
+        }
+        Arrays.sort(copy);
+        for (int i = 0; i < copy.length; i++) {
+            if (copy[i] == null) throw new IllegalArgumentException("Point cannot be null");
+            if (i != 0 && copy[i] == copy[i-1]) throw new IllegalArgumentException("Duplicate points are not allowed");
+        }
     }
 
     // Unit test for BruteCollinearPoints. Takes in standard input collection of points, draws them
@@ -120,7 +121,7 @@ public class BruteCollinearPoints {
         BruteCollinearPoints collinear = new BruteCollinearPoints(points);
 
         StdDraw.setPenRadius(0.002);
-        for (LineSegment segment : collinear.segments()) {  // TODO where is this iterator???
+        for (LineSegment segment : collinear.segments()) {
             StdOut.println(segment);
             segment.draw();
         }

@@ -51,23 +51,25 @@ public class FastCollinearPoints {
     public FastCollinearPoints(Point[] points) {
         if (points == null) { throw new IllegalArgumentException("points cannot be null"); }
         Point[] pointsInNaturalOrder = new Point[points.length];
-        validateAndCopyPoints(points, pointsInNaturalOrder);
+        Point[] pointsBySlopeOrder = new Point[points.length];
+        copyPoints(points, pointsBySlopeOrder, pointsInNaturalOrder);
         Arrays.sort(pointsInNaturalOrder);
+        validatePoints(pointsInNaturalOrder);
 
         numberOfSegments = 0;
         segments = new ArrayList<LineSegment>();
+        if (pointsBySlopeOrder.length < 4) return;
 
-        for (int i = 0; i < points.length - 3; i++) {
+        for (int i = 0; i < pointsBySlopeOrder.length - 3; i++) {
             Point p = pointsInNaturalOrder[i];
             double prevSlope = Double.NEGATIVE_INFINITY; // set to unreachable value for first pass
             int startIndex = -1;
             boolean wasCollinear = false;
 
-            Arrays.sort(points, p.slopeOrder()); // points succeeding parent sorted
+            Arrays.sort(pointsBySlopeOrder, p.slopeOrder()); // points succeeding parent sorted
 
-            for (int j = 1; j < points.length; j++) {
-                double slope = p.slopeTo(points[j]);
-                if (slope == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException("Duplicate points are not allowed");
+            for (int j = 1; j < pointsBySlopeOrder.length; j++) {
+                double slope = p.slopeTo(pointsBySlopeOrder[j]);
 
                 // start of collinear segment. Records parent and prev point
                 if (!wasCollinear && slope == prevSlope) {
@@ -76,19 +78,19 @@ public class FastCollinearPoints {
                 }
 
                 // end of collinear segment. On end checks for segment 4+ points
-                if (wasCollinear && (slope != prevSlope || j == points.length-1)) {
+                if (wasCollinear && (slope != prevSlope || j == pointsBySlopeOrder.length-1)) {
                     int endIndex = (j - 1);
-                    if (j == points.length - 1 && slope == prevSlope) endIndex = j;
+                    if (j == pointsBySlopeOrder.length - 1 && slope == prevSlope) endIndex = j;
                     int length = ((endIndex + 1) - startIndex) + 1;
                     wasCollinear = false;
                     if (length >= 4) {
                         boolean parentIsLeast = true;
                         for (int m = startIndex; m <= endIndex; m++) {
-                            if (p.compareTo(points[m]) > 0) parentIsLeast = false;
+                            if (p.compareTo(pointsBySlopeOrder[m]) > 0) parentIsLeast = false;
                         }
                         if (parentIsLeast) {
-                            Arrays.sort(points, startIndex, endIndex + 1);
-                            segments.add(new LineSegment(p, points[endIndex]));
+                            Arrays.sort(pointsBySlopeOrder, startIndex, endIndex + 1);
+                            segments.add(new LineSegment(p, pointsBySlopeOrder[endIndex]));
                             numberOfSegments++;
                         }
                     }
@@ -108,11 +110,19 @@ public class FastCollinearPoints {
      */
     public LineSegment[] segments() { return segments.toArray(new LineSegment[0]); }
 
-    // Loops through provided array of points and checks for null points or duplicates, creates a copy
-    private void validateAndCopyPoints(Point[] points, Point[] copy) {
+    // Loops through provided array of points and checks for null points or duplicates
+    private void validatePoints(Point[] points) {
         for (int i = 0; i < points.length; i++) {
-            if (points[i] == null) { throw new IllegalArgumentException("Point cannot be null"); }
-            copy[i] = points[i];
+            if (points[i] == null) throw new IllegalArgumentException("Point cannot be null");
+            if (i != 0 && points[i] == points[i-1]) throw new IllegalArgumentException("Duplicate points are not allowed");
+        }
+    }
+
+    // Creates 2 copies of points. One for sorting by natural order, one for by slope
+    private void copyPoints(Point[] points, Point[] copy1, Point[] copy2) {
+        for (int i = 0; i < points.length; i++) {
+            copy1[i] = points[i];
+            copy2[i] = points[i];
         }
     }
 

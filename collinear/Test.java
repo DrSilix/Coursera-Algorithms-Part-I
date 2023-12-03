@@ -48,16 +48,13 @@ public class Test {
                     int n = Integer.parseInt(args[1]);
                     Point[] points = new Point[n];
                     for (int j = 0; j < n; j++) {
-                        if (StdRandom.uniformInt(10000) == 1) {
-                            points[j] = null;
-                            continue;
-                        }
                         int x = StdRandom.uniformInt(3276) * 10 + 4;
                         int y = StdRandom.uniformInt(3276) * 10 + 4;
                         points[j] = new Point(x, y);
                     }
-                    points = null;
+                    StdOut.println(points[40]);
                     runTestOnPoints(points, false, false);
+                    StdOut.println(points[40]);
                     try {
                         Thread.sleep(2000);
                     }
@@ -213,7 +210,7 @@ public class Test {
             if (drawResults) {
                 StdDraw.setPenRadius(0.006);
                 StdDraw.setPenColor(Color.blue);
-                for (LineSegment segment : fast.segments()) {  // TODO where is this iterator???
+                for (LineSegment segment : fast.segments()) {
                     StdOut.println(segment);
                     segment.draw();
                 }
@@ -229,7 +226,7 @@ public class Test {
                     if (drawResults) {
                         StdDraw.setPenRadius(0.002);
                         StdDraw.setPenColor(Color.red);
-                        for (LineSegment segment : brute.segments()) {  // TODO where is this iterator???
+                        for (LineSegment segment : brute.segments()) {
                             StdOut.println(segment);
                             segment.draw();
                         }
