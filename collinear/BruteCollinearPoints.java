@@ -85,12 +85,12 @@ public class BruteCollinearPoints {
     private void validatePoints(Point[] points) {
         Point[] copy = new Point[points.length];
         for (int i = 0; i < points.length; i++) {
+            if (points[i] == null) throw new IllegalArgumentException("Point cannot be null");
             copy[i] = points[i];
         }
         Arrays.sort(copy);
-        for (int i = 0; i < copy.length; i++) {
-            if (copy[i] == null) throw new IllegalArgumentException("Point cannot be null");
-            if (i != 0 && copy[i] == copy[i-1]) throw new IllegalArgumentException("Duplicate points are not allowed");
+        for (int i = 1; i < copy.length; i++) {
+            if (copy[i].compareTo(copy[i-1]) == 0) throw new IllegalArgumentException("Duplicate points are not allowed");
         }
     }
 

@@ -113,14 +113,14 @@ public class FastCollinearPoints {
     // Loops through provided array of points and checks for null points or duplicates
     private void validatePoints(Point[] points) {
         for (int i = 0; i < points.length; i++) {
-            if (points[i] == null) throw new IllegalArgumentException("Point cannot be null");
-            if (i != 0 && points[i] == points[i-1]) throw new IllegalArgumentException("Duplicate points are not allowed");
+            if (i != 0 && points[i].compareTo(points[i-1]) == 0) throw new IllegalArgumentException("Duplicate points are not allowed");
         }
     }
 
     // Creates 2 copies of points. One for sorting by natural order, one for by slope
     private void copyPoints(Point[] points, Point[] copy1, Point[] copy2) {
         for (int i = 0; i < points.length; i++) {
+            if (points[i] == null) throw new IllegalArgumentException("Point cannot be null");
             copy1[i] = points[i];
             copy2[i] = points[i];
         }
