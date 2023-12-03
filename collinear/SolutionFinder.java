@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 public class SolutionFinder {
     private int numberOfSegments = 0;
+    private int solutionNumberOfSegments = 0;
     private ArrayList<LineSegmentPoints> segments;
 
     // finds all line segments containing exactly 4 points

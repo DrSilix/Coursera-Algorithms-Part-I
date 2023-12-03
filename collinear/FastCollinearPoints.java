@@ -49,53 +49,89 @@ public class FastCollinearPoints {
     // loops through each point once (except last 3) and sorts all succeeding points by their slope
     // to that parent point. Finds sequences of 3+ similar slopes. Duplicate segments are removed after
     public FastCollinearPoints(Point[] points) {
-        validatePoints(points);
+        Point[] pointsInNaturalOrder = new Point[points.length];
+
+        validateAndCopyPoints(points, pointsInNaturalOrder);
 
         numberOfSegments = 0;
         segments = new ArrayList<LineSegment>();
         ArrayList<LineSegmentPoints> segmentsByPoints = new ArrayList<LineSegmentPoints>();
 
-        Arrays.sort(points);
+        Arrays.sort(pointsInNaturalOrder);
 
+
+        int startIndex = -1;
         for (int i = 0; i < points.length - 3; i++) {
-            Point p = points[i];
+            Point p = pointsInNaturalOrder[i];
             ArrayList<Point> collinearPoints = new ArrayList<Point>();
             double prevSlope = -999;
             boolean wasCollinear = false;
 
-            Arrays.sort(points, i+1, points.length, p.slopeOrder()); // points succeeding parent sorted
+            Arrays.sort(points, p.slopeOrder()); // points succeeding parent sorted
 
-            for (int j = i + 1; j < points.length; j++) {
-                double slope = points[i].slopeTo(points[j]);
+            for (int j = 1; j < points.length; j++) {
+                double slope = p.slopeTo(points[j]);
                 if (slope == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException("Duplicate points are not allowed");
 
                 // start of collinear segment. Records parent and prev point
                 if (!wasCollinear && slope == prevSlope) {
                     wasCollinear = true;
-                    collinearPoints = new ArrayList<Point>();
-                    collinearPoints.add(points[i]); // add the parent point
-                    collinearPoints.add(points[j-1]); // add the previous point
+                    startIndex = j-1;
+                    // collinearPoints = new ArrayList<Point>();
+                    // collinearPoints.add(p); // add the parent point
+                    // collinearPoints.add(points[j-1]); // add the previous point
                 }
 
                 // middle of collinear segment. Records current point
-                if (wasCollinear && slope == prevSlope) {
+                /* if (wasCollinear && slope == prevSlope) {
                     collinearPoints.add(points[j]);
-                }
+                }*/
 
                 // end of collinear segment. On end checks for segment 4+ points
                 if (wasCollinear && (slope != prevSlope || j == points.length-1)) {
+                    int endIndex = (j - 1);
+                    if (j == points.length-1) endIndex = j;
+                    int length = ((endIndex + 1) - startIndex) + 1;
                     wasCollinear = false;
-                    if (collinearPoints.size() >= 4) {
-                        Point[] sortedTemp = collinearPoints.toArray(new Point[0]);
-                        Arrays.sort(sortedTemp);    // points are sorted to get true first and last point
-                        segmentsByPoints.add(new LineSegmentPoints(sortedTemp[0], sortedTemp[sortedTemp.length-1],
-                                                                   sortedTemp.length));
+                    if (length >= 4) {
+                        boolean inOrder = true;
+                        for (int m = startIndex; m <= endIndex; m++) {
+                            if (p.compareTo(points[m]) > 0) inOrder = false;
+                        }
+                        if (inOrder) {
+                            segments.add(new LineSegment(p, points[endIndex]));
+                            numberOfSegments++;
+                        }
                     }
                 }
+                        // Point[] sortedTemp = new Point[length];
+                       /* sortedTemp[0] = p;
+                        for (int m = 1, k = startIndex; m < sortedTemp.length; m++, k++) {
+                            sortedTemp[m] = points[k];
+                        }
+                        // Point firstBeforeSort = sortedTemp[0];
+                        Arrays.sort(sortedTemp);    // points are sorted to get true first and last point
+                        Point firstAfterSort = sortedTemp[0];
+                        if (p == firstAfterSort) {
+                            segments.add(new LineSegment(sortedTemp[0], sortedTemp[sortedTemp.length - 1]));
+                            numberOfSegments++;
+                        }
+                    }*/
+                    /* if (collinearPoints.size() >= 4) {
+                        Point[] sortedTemp = collinearPoints.toArray(new Point[0]);
+                        Point firstBeforeSort = sortedTemp[0];
+                        Arrays.sort(sortedTemp);    // points are sorted to get true first and last point
+                        Point firstAfterSort = sortedTemp[0];
+                        if (firstBeforeSort == firstAfterSort) {
+                            segments.add(new LineSegment(sortedTemp[0], sortedTemp[sortedTemp.length - 1]));
+                            numberOfSegments++;
+                        }
+                        // segmentsByPoints.add(new LineSegmentPoints(sortedTemp[0], sortedTemp[sortedTemp.length-1], sortedTemp.length));
+                    }*/
                 prevSlope = slope;
             }
         }
-        if (segmentsByPoints.size() > 0) removeDuplicateSegments(segmentsByPoints.toArray(new LineSegmentPoints[0]));
+        // if (segmentsByPoints.size() > 0) removeDuplicateSegments(segmentsByPoints.toArray(new LineSegmentPoints[0]));
     }
 
     // Removes duplicate segments. When a segment is 5+ points long multiple segments are captured
@@ -132,10 +168,11 @@ public class FastCollinearPoints {
     public LineSegment[] segments() { return segments.toArray(new LineSegment[0]); }
 
     // Loops through provided array of points and checks for null points or duplicates
-    private void validatePoints(Point[] points) {
+    private void validateAndCopyPoints(Point[] points, Point[] copy) {
         if (points == null) { throw new IllegalArgumentException("points cannot be null"); }
         for (int i = 0; i < points.length; i++) {
             if (points[i] == null) { throw new IllegalArgumentException("Point cannot be null"); }
+            copy[i] = points[i];
         }
         /* Arrays.sort(points);
         for (int i = 1; i < points.length; i++) {
