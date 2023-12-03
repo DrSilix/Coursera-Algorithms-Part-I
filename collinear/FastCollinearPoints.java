@@ -75,7 +75,8 @@ public class FastCollinearPoints {
                     if (collinearPoints.size() >= 4) {
                         Point[] sortedTemp = collinearPoints.toArray(new Point[0]);
                         Arrays.sort(sortedTemp);    // points are sorted to get true first and last point
-                        segmentsByPoints.add(new LineSegmentPoints(sortedTemp[0], sortedTemp[sortedTemp.length-1]));
+                        segmentsByPoints.add(new LineSegmentPoints(sortedTemp[0], sortedTemp[sortedTemp.length-1],
+                                                                   sortedTemp.length));
                     }
                 }
                 prevSlope = slope;
@@ -88,12 +89,21 @@ public class FastCollinearPoints {
     // This sorts by the last point in segments and removes segments with duplicate last points
     // except where the slopes are different.
     private void removeDuplicateSegments(LineSegmentPoints[] segmentsByPoints) {
+        for (LineSegmentPoints seg : segmentsByPoints) {
+            StdOut.println(seg.getFirst().toString() + ", " + seg.getLast().toString());
+        }
         Arrays.sort(segmentsByPoints);
+        StdOut.println("---");
+        for (LineSegmentPoints seg : segmentsByPoints) {
+            StdOut.println(seg.getFirst().toString() + ", " + seg.getLast().toString());
+        }
+        StdOut.println("---");
         segments.add(new LineSegment(segmentsByPoints[0].first, segmentsByPoints[0].last));
         numberOfSegments++;
         for (int i = 1; i < segmentsByPoints.length; i++) {
             // check for unequal last points, or equal last points and unequal slopes
-            if (segmentsByPoints[i - 1].getLast() != segmentsByPoints[i].getLast() ||
+            if ((segmentsByPoints[i - 1].getFirst() != segmentsByPoints[i].getFirst() &&
+                    segmentsByPoints[i - 1].getLast() != segmentsByPoints[i].getLast()) ||
                     segmentsByPoints[i - 1].getSlope() != segmentsByPoints[i].getSlope()) {
                 segments.add(new LineSegment(segmentsByPoints[i].first, segmentsByPoints[i].last));
                 numberOfSegments++;
@@ -124,19 +134,24 @@ public class FastCollinearPoints {
     // Course provided LineSegment class provides no way to efficiently access a segments first and last point
     private class LineSegmentPoints implements Comparable<LineSegmentPoints> {
         private Point first, last;
+        private int length;
 
-        public LineSegmentPoints(Point a, Point b) {
+        public LineSegmentPoints(Point a, Point b, int l) {
             first = a;
             last = b;
+            length = l;
         }
 
+        public int getlength() { return length; }
+        public Point getFirst() { return first; }
         public Point getLast() { return last; }
         public double getSlope() { return first.slopeTo(last); }
 
         // compares last points and if equal compares the slopes
         public int compareTo(LineSegmentPoints that) {
-            int c = last.compareTo(that.last);
-            if (c == 0) c = Double.compare(first.slopeTo(last), that.first.slopeTo(that.last));
+            int c = Double.compare(first.slopeTo(last), that.first.slopeTo(that.last));
+            if (c == 0) c = first.compareTo(that.first);
+            if (c == 0) c = last.compareTo(that.last);
             return c;
         }
     }
