@@ -13,12 +13,13 @@ import java.util.LinkedList;
 public class Board {
     private final short[][] board;
     private final int n;
-    private int manhattan;
+    private int manhattan, hamming;
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
         manhattan = -1;
+        hamming = -1;
         n = tiles.length;
         board = new short[n][n];
         for (int y = 0; y < n; y++)
@@ -53,14 +54,15 @@ public class Board {
 
     // number of tiles out of place
     public int hamming() {
-        int h = 0;
+        if (hamming >= 0) return hamming;
+        hamming = 0;
         for (int y = 0; y < n; y++) {
             for (int x = 0; x < n; x++) {
                 if (y == n - 1 && x == n - 1) continue;
-                if (board[y][x] == n * y + (x + 1)) h++;
+                if (board[y][x] == n * y + (x + 1)) hamming++;
             }
         }
-        return h;
+        return hamming;
     }
 
     // sum of Manhattan distances between tiles and goal
