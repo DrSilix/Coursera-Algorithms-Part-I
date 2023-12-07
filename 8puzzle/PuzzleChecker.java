@@ -38,7 +38,7 @@ public class PuzzleChecker {
             // read in the board specified in the filename
             In in = new In(filename);
             int n = in.readInt();
-            int[][] tiles = new int[n][n];
+            short[][] tiles = new short[n][n];
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n; j++) {
                     tiles[i][j] = in.readInt();

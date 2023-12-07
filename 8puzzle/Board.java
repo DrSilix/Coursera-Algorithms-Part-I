@@ -11,19 +11,28 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 public class Board {
-    private final int[][] board;
-    private final int[][] debugBoard;
+    private final short[][] board;
     private final int n;
+    private int manhattan;
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
+        manhattan = -1;
         n = tiles.length;
-        debugBoard = new int[n][n];
-        board = new int[n][n];  // TODO: does this need to be 1-based indexed?
+        board = new short[n][n];
         for (int y = 0; y < n; y++)
             for (int x = 0; x < n; x++)
-                board[y][x] = tiles[y][x];
+                board[y][x] = (short) tiles[y][x];
+    }
+
+    private Board(short[][] shortTiles) {
+        manhattan = -1;
+        n = shortTiles.length;
+        board = new short[n][n];
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+                board[y][x] = shortTiles[y][x];
     }
 
     // string representation of this board
@@ -42,8 +51,6 @@ public class Board {
     // board dimension n
     public int dimension() { return n; }
 
-    public int[][] getDebugBoard() { return debugBoard; }
-
     // number of tiles out of place
     public int hamming() {
         int h = 0;
@@ -58,7 +65,8 @@ public class Board {
 
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
-        int m = 0;
+        if (manhattan >= 0) return manhattan;
+        manhattan = 0;
         int eX, eY;  // expected x and y
         for (int cY = 0; cY < n; cY++) {
             for (int cX = 0; cX < n; cX++) { // current x and y
@@ -66,11 +74,10 @@ public class Board {
                 if (k == 0) continue;
                 eX = (k - 1) % n;
                 eY = (k - 1) / n; // TODO: will this just automatically do integer division e.g. 8/3 = 2
-                m += Math.abs((eX - cX) + (eY - cY));
-                debugBoard[cY][cX] = Math.abs((eX - cX) + (eY - cY));
+                manhattan += Math.abs((eX - cX) + (eY - cY));
             }
         }
-        return m;
+        return manhattan;
     }
 
     // is this board the goal board?
@@ -99,7 +106,7 @@ public class Board {
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
-        int[][] copy = new int[n][n];
+        short[][] copy = new short[n][n];
         int zX = -1, zY = -1;
         for (int y = 0; y < n; y++) {
             for (int x = 0; x < n; x++) {
@@ -128,9 +135,9 @@ public class Board {
         return neighbors;
     }
 
-    private Board getNeighbor(int[][] copy, int x, int y, int nX, int nY) {
+    private Board getNeighbor(short[][] copy, int x, int y, int nX, int nY) {
         if (nX < 0 || nX >= n || nY < 0 || nY >= n) return null;
-        int temp;
+        short temp;
         temp = copy[nY][nX];
         copy[nY][nX] = copy[y][x];
         copy[y][x] = temp;
@@ -143,11 +150,13 @@ public class Board {
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
-        int[][] twin = new int[n][n];
-        int sX = -1, sY = -1, sK = -1;
+        short[][] twin = new short[n][n];
+        int sX = -1;
+        int sY = -1;
+        short sK = -1;
         for (int y = 0; y < n; y++) {
             for (int x = 0; x < n; x++) {
-                int k = board[y][x];
+                short k = board[y][x];
                 twin[y][x] = k;
                 if (sK > -1 && k != 0) {
                     twin[y][x] = sK;
@@ -172,7 +181,7 @@ public class Board {
         int[][] tiles = new int[n][n];
         int[][] same = new int[n][n];
         int[][] diff = new int[n][n];
-        int[][] goal = new int[][] {{1, 2, 3}, {4, 5, 6}, {7, 8, 0}};
+        int[][] goal = new int[][] { { 1, 2, 3}, { 4, 5, 6}, { 7, 8, 0}};
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 tiles[i][j] = in.readInt();
@@ -192,7 +201,6 @@ public class Board {
         StdOut.println("dimension: " + initial.dimension());
         StdOut.println("hamming: " + initial.hamming());
         StdOut.println("manhattan: " + initial.manhattan());
-        StdOut.print(new Board(initial.getDebugBoard()).toString());
         StdOut.println("isGoal (false): " + initial.isGoal());
         StdOut.println("isEqual (true): " + initial.equals(otherSame) + "\n");
         StdOut.println("Twin:");

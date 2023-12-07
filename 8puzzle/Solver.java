@@ -31,25 +31,57 @@ public class Solver {
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         MinPQ<SearchNode> pq = new MinPQ<SearchNode>();
+        MinPQ<SearchNode> twinPq = new MinPQ<SearchNode>();
+
         isSolvable = true;
+
         moves = 0;
-        SearchNode minNode;
-        SearchNode prevNode = new SearchNode(initial, moves, null);
-        pq.insert(prevNode);
+        int twinMoves = 0;
+
+        // SearchNode minNode, twinMinNode;
+        SearchNode finalNode;
+
+        // SearchNode prevNode = new SearchNode(initial, moves, null);
+        // pq.insert(prevNode);
+        pq.insert(new SearchNode(initial, moves, null));
+
+        SearchNode twinPrevNode = new SearchNode(initial.twin(), twinMoves, null);
+        pq.insert(twinPrevNode);
+
         while (true) {   // TODO: there has to be some fundamental problem like not properly removing boards
-            minNode = pq.delMin();
-            if (minNode.getBoard().isGoal()) { break; }
+            // stepSolution(pq, moves, prevNode);
+            SearchNode minNode = pq.delMin();
+            SearchNode prevNode = minNode.getPrevNode();
+            if (minNode.getBoard().isGoal()) {
+                finalNode = minNode;
+                break;
+            }
             moves = minNode.getMoves()+1;
             for (Board nbrs : minNode.getBoard().neighbors()) {
-                if (nbrs.equals(prevNode.getBoard())) continue;
+                if (prevNode != null && nbrs.equals(prevNode.getBoard())) continue;
                 pq.insert(new SearchNode(nbrs, moves, minNode));
             }
-            prevNode = minNode;
+            // prevNode = minNode;
+            // StdOut.println("pq size:" + pq.size() + " moves:" + moves + " minNode priority:" + minNode.getPriority());
+
+            /* twinMinNode = twinPq.delMin();
+            if (twinMinNode.getBoard().isGoal()) { break; }
+            twinMoves = twinMinNode.getMoves()+1;
+            for (Board nbrs : twinMinNode.getBoard().neighbors()) {
+                if (nbrs.equals(twinPrevNode.getBoard())) continue;
+                pq.insert(new SearchNode(nbrs, twinMoves, twinMinNode));
+            }
+            twinPrevNode = twinMinNode;*/
         }
 
-        for (SearchNode node : minNode) {
+        for (SearchNode node : finalNode) {
             StdOut.print(node.getBoard().toString());
         }
+
+    }
+
+    // pass pq
+    private void stepSolution(){
 
     }
 
@@ -86,7 +118,11 @@ public class Solver {
         public String toString() { return b.toString(); }
 
         public int compareTo(SearchNode that) {
-            return Integer.compare(priority, that.priority);
+            int priorityComp = Integer.compare(priority, that.priority);
+            if (priorityComp != 0) return priorityComp;
+            int manhattanComp = Integer.compare(b.manhattan(), that.b.manhattan());
+            if (manhattanComp != 0) return manhattanComp;
+            return Integer.compare(b.hamming(), that.b.hamming());
         }
 
         public Iterator<SearchNode> iterator() {
