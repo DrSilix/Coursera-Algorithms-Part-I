@@ -20,20 +20,27 @@ import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Iterator;
 
 public class Solver {
+    private static final int HASHES_TO_STORE = 100;
+
     private SearchNode solutionNode;
     private boolean isSolvable;
     private int moves;
     private int queueSize;
+    private Deque<SearchNode> hashes;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         if (initial == null) throw new IllegalArgumentException("Initial board cannot be null");
         MinPQ<SearchNode> pq = new MinPQ<SearchNode>();
         MinPQ<SearchNode> twinPq = new MinPQ<SearchNode>();
+
+        hashes = new ArrayDeque<SearchNode>();
 
         isSolvable = true;
 
@@ -50,7 +57,7 @@ public class Solver {
 
         while (true) {
             // step forward a solver for the main board
-            SearchNode r = stepSolution(pq);
+            SearchNode r = stepSolution(pq, false);
             if (r != null) {
                 finalNode = r;
                 moves = finalNode.getMoves();
@@ -60,7 +67,7 @@ public class Solver {
             }
 
             // step forward a solver for the twin board simultaneously
-            SearchNode tR = stepSolution(twinPq);
+            SearchNode tR = stepSolution(twinPq, true);
             if (tR != null) {
                 moves = -1;
                 solutionNode = null;
@@ -71,9 +78,23 @@ public class Solver {
     }
 
     // pass pq
-    private SearchNode stepSolution(MinPQ<SearchNode> q) {
+    private SearchNode stepSolution(MinPQ<SearchNode> q, boolean isTwin) {
         SearchNode minNode = q.delMin();
         SearchNode prevNode = minNode.getPrevNode();
+        if (!isTwin) StdOut.print("\nmove: " + minNode.getMoves() + " priority:" + minNode.getPriority() + " queueSize:" + q.size() + " hash:" + minNode.getBoard().hashCode());
+
+        int i = 0;
+        int thisHash = minNode.getBoard().hashCode();
+        for (Iterator it = hashes.iterator(); it.hasNext();) {
+            SearchNode thatNode = (SearchNode) it.next();
+            if (thisHash == thatNode.hashCode())
+                StdOut.print(" - Duplicate Hash " + i);
+            i++;
+        }
+
+        hashes.addFirst(minNode);
+        if (hashes.size() >= HASHES_TO_STORE) hashes.removeLast();
+
         if (minNode.getBoard().isGoal()) {
             return minNode;
         }
@@ -108,12 +129,14 @@ public class Solver {
         private int m;
         private SearchNode pN;
         private int priority;
+        private int hash;
 
 
         public SearchNode(Board board, int moves, SearchNode prevNode) {
             b = board;
             m = moves;
             pN = prevNode;
+            hash = b.hashCode();
 
             priority = moves + board.manhattan();
         }
@@ -121,8 +144,9 @@ public class Solver {
         public Board getBoard() { return b; }
         public int getMoves() { return m; }
         public SearchNode getPrevNode() { return pN; }
-        // public int getPriority() { return priority; }
+        public int getPriority() { return priority; }
         public String toString() { return b.toString(); }
+        public int hashCode() { return hash; }
 
         public int compareTo(SearchNode that) {
             int priorityComp = Integer.compare(priority, that.priority);

@@ -49,6 +49,10 @@ public class Board {
         return result.toString();
     }
 
+    public int hashCode() {
+        return Arrays.deepHashCode(board);
+    }
+
     // board dimension n
     public int dimension() { return n; }
 
@@ -216,6 +220,8 @@ public class Board {
         for (Board b : initial.neighbors()) {
             StdOut.print(b.toString());
         }
+        StdOut.println(initial.hashCode());
+        StdOut.println(otherSame.hashCode());
     }
 
 }
