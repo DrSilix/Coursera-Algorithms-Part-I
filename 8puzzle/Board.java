@@ -29,6 +29,7 @@ public class Board {
 
     private Board(short[][] shortTiles) {
         manhattan = -1;
+        hamming = -1;
         n = shortTiles.length;
         board = new short[n][n];
         for (int y = 0; y < n; y++)
@@ -79,7 +80,7 @@ public class Board {
                 int k = board[cY][cX];
                 if (k == 0) continue;
                 eX = (k - 1) % n;
-                eY = (k - 1) / n; // TODO: will this just automatically do integer division e.g. 8/3 = 2
+                eY = (k - 1) / n;
                 manhattan += Math.abs((eX - cX) + (eY - cY));
             }
         }
@@ -94,7 +95,7 @@ public class Board {
                 int k = board[cY][cX];
                 if (k == 0) continue;
                 eX = (k - 1) % n;
-                eY = (k - 1) / n; // TODO: not calculated correctly
+                eY = (k - 1) / n;
                 if (eX != cX || eY != cY) return false;
             }
         }
@@ -141,6 +142,7 @@ public class Board {
         return neighbors;
     }
 
+    // TODO: apparently there is an optimization in considering neighbors are +- 1 manhattan
     private Board getNeighbor(short[][] copy, int x, int y, int nX, int nY) {
         if (nX < 0 || nX >= n || nY < 0 || nY >= n) return null;
         short temp;

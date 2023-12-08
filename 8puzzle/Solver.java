@@ -20,9 +20,7 @@ import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.Iterator;
 
 public class Solver {
@@ -32,7 +30,7 @@ public class Solver {
     private boolean isSolvable;
     private int moves;
     private int queueSize;
-    private Deque<SearchNode> hashes;
+    // private Deque<SearchNode> hashes;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
@@ -40,7 +38,7 @@ public class Solver {
         MinPQ<SearchNode> pq = new MinPQ<SearchNode>();
         MinPQ<SearchNode> twinPq = new MinPQ<SearchNode>();
 
-        hashes = new ArrayDeque<SearchNode>();
+        // hashes = new ArrayDeque<SearchNode>();
 
         isSolvable = true;
 
@@ -81,19 +79,21 @@ public class Solver {
     private SearchNode stepSolution(MinPQ<SearchNode> q, boolean isTwin) {
         SearchNode minNode = q.delMin();
         SearchNode prevNode = minNode.getPrevNode();
-        if (!isTwin) StdOut.print("\nmove: " + minNode.getMoves() + " priority:" + minNode.getPriority() + " queueSize:" + q.size() + " hash:" + minNode.getBoard().hashCode());
+        // if (!isTwin) StdOut.print("\nmove: " + minNode.getMoves() + " priority:" + minNode.getPriority() + " queueSize:" + q.size() + " hash:" + minNode.getBoard().hashCode());
 
-        int i = 0;
-        int thisHash = minNode.getBoard().hashCode();
-        for (Iterator it = hashes.iterator(); it.hasNext();) {
-            SearchNode thatNode = (SearchNode) it.next();
-            if (thisHash == thatNode.hashCode())
-                StdOut.print(" - Duplicate Hash " + i);
-            i++;
-        }
+        /* if (!isTwin) {
+            int i = 0;
+            int thisHash = minNode.getBoard().hashCode();
+            for (Iterator it = hashes.iterator(); it.hasNext(); ) {
+                SearchNode thatNode = (SearchNode) it.next();
+                if (thisHash == thatNode.getBoard().hashCode())
+                    StdOut.print(" - Duplicate Board " + i);
+                i++;
+            }
 
-        hashes.addFirst(minNode);
-        if (hashes.size() >= HASHES_TO_STORE) hashes.removeLast();
+            hashes.addFirst(minNode);
+            if (hashes.size() >= HASHES_TO_STORE) hashes.removeLast();
+        }*/
 
         if (minNode.getBoard().isGoal()) {
             return minNode;
@@ -155,7 +155,20 @@ public class Solver {
             if (manhattanComp != 0) return manhattanComp;
             int hamPriorityComp = Integer.compare((b.hamming() + getMoves()), (that.b.hamming() + that.getMoves()));
             if (hamPriorityComp != 0) return hamPriorityComp;
-            return Integer.compare(b.hamming(), that.b.hamming());
+            int hamComp = Integer.compare(b.hamming(), that.b.hamming());
+            if (hamComp != 0) return hamComp;
+            return 0;
+
+            /*// last resort
+            int thisMinNeighborPriority = priority + 10;
+            for (Board neighbor : b.neighbors()) {
+                if (neighbor.manhattan() < thisMinNeighborPriority) thisMinNeighborPriority = neighbor.manhattan();
+            }
+            int thatMinNeighborPriority = priority + 10;
+            for (Board neighbor : that.b.neighbors()) {
+                if (neighbor.manhattan() < thatMinNeighborPriority) thatMinNeighborPriority = neighbor.manhattan();
+            }
+            return Integer.compare(thisMinNeighborPriority, thatMinNeighborPriority);*/
         }
 
         public Iterator<SearchNode> iterator() {
