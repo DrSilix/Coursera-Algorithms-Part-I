@@ -1,7 +1,7 @@
 /* *****************************************************************************
  *  Name:              Alex Hackl
  *  Coursera User ID:  alexhackl@live.com
- *  Last modified:     12/7/2023
+ *  Last modified:     12/8/2023
  *
  *  Compilation: javac-algs4 Solver.java
  *  Execution: java-algs4 Solver puzzle04.txt
