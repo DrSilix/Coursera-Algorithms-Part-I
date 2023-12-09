@@ -1,17 +1,50 @@
 /* *****************************************************************************
- *  Name:
- *  Date:
- *  Description:
+ *  Name:              Alex Hackl
+ *  Coursera User ID:  alexhackl@live.com
+ *  Last modified:     12/7/2023
  *
- * We define a search node of the game to be a board, the number of moves made
- * to reach the board, and the previous search node. First, insert the initial
- * search node (the initial board, 0 moves, and a null previous search node) into
- * a priority queue. Then, delete from the priority queue the search node with
- * the minimum priority, and insert onto the priority queue all neighboring
- * search nodes (those that can be reached in one move from the dequeued search
- * node). Repeat this procedure until the search node dequeued corresponds to
- * the goal board.
+ *  Compilation: javac-algs4 Solver.java
+ *  Execution: java-algs4 Solver puzzle04.txt
+ *  Dependencies: Board.java
  *
+ *  Library that takes a 2d board representing the state of a sliding puzzle
+ *  and uses an efficient A* search algorithm using a minimum priority queue
+ *  binary tree to iterate over the board and find the least moves required to
+ *  find the solution.
+ *
+ *  Text file argument formatting:
+ *  puzzle04.txt
+ *  3
+ *  0 1 3
+ *  4 2 5
+ *  7 8 6
+ *
+ *  % java-algs4 Solver puzzle04.txt
+ *  Minimum number of moves = 4
+ *  3
+ *   0  1  3
+ *   4  2  5
+ *   7  8  6
+ *
+ *  3
+ *   1  0  3
+ *   4  2  5
+ *   7  8  6
+ *
+ *  3
+ *   1  2  3
+ *   4  0  5
+ *   7  8  6
+ *
+ *  3
+ *   1  2  3
+ *   4  5  0
+ *   7  8  6
+ *
+ *  3
+ *   1  2  3
+ *   4  5  6
+ *   7  8  0
  *
  **************************************************************************** */
 
@@ -24,157 +57,152 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Solver {
-    private static final int HASHES_TO_STORE = 100;
-
     private SearchNode solutionNode;
     private boolean isSolvable;
     private int moves;
-    private int queueSize;
-    // private Deque<SearchNode> hashes;
 
+    /**
+     * Initializes a 2d board representing the state of a sliding puzzle
+     * and uses an efficient A* search algorithm using a minimum priority queue
+     * binary tree to iterate over the board and find the least moves required to
+     * find the solution.<br />
+     * <br />
+     * Also, simultaneously solves a twin of the initial board (initial board with
+     * 2 tiles flipped) to determine if the board is solvable
+     *
+     * @param  initial Board object representing the initial board state
+     * @throws IllegalArgumentException if <tt>initial</tt> is null
+     */
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         if (initial == null) throw new IllegalArgumentException("Initial board cannot be null");
+
         MinPQ<SearchNode> pq = new MinPQ<SearchNode>();
-        MinPQ<SearchNode> twinPq = new MinPQ<SearchNode>();
-
-        // hashes = new ArrayDeque<SearchNode>();
-
         isSolvable = true;
-
         moves = 0;
 
-        // SearchNode minNode, twinMinNode;
-        SearchNode finalNode;
-
-        // SearchNode prevNode = new SearchNode(initial, moves, null);
-        // pq.insert(prevNode);
-        pq.insert(new SearchNode(initial, 0, null));
-
-        twinPq.insert(new SearchNode(initial.twin(), 0, null));
+        pq.insert(new SearchNode(initial, 0, null, false));
+        pq.insert(new SearchNode(initial.twin(), 0, null, true));
 
         while (true) {
             // step forward a solver for the main board
-            SearchNode r = stepSolution(pq, false);
+            SearchNode r = stepSolution(pq);
             if (r != null) {
-                finalNode = r;
-                moves = finalNode.getMoves();
-                queueSize = pq.size();
-                solutionNode = finalNode;
-                return;
-            }
-
-            // step forward a solver for the twin board simultaneously
-            SearchNode tR = stepSolution(twinPq, true);
-            if (tR != null) {
-                moves = -1;
-                solutionNode = null;
-                isSolvable = false;
+                if (r.isTwin()) {
+                    moves = -1;
+                    solutionNode = null;
+                    isSolvable = false;
+                    return;
+                }
+                moves = r.getMoves();
+                solutionNode = r;
                 return;
             }
         }
     }
 
-    // pass pq
-    private SearchNode stepSolution(MinPQ<SearchNode> q, boolean isTwin) {
+    /*
+    * Steps forward a priority queue by de-queueing the minimum keyed item,
+    * checking if it is the goal board, and then queueing the neighbor boards.
+    * The previous board (guaranteed neighbor) and a neighbor board with a lower
+    * priority are skipped.
+    *
+    * Returns a SearchNode if it is the goal board
+     */
+    private SearchNode stepSolution(MinPQ<SearchNode> q) {
         SearchNode minNode = q.delMin();
         SearchNode prevNode = minNode.getPrevNode();
-        // if (!isTwin) StdOut.print("\nmove: " + minNode.getMoves() + " priority:" + minNode.getPriority() + " queueSize:" + q.size() + " hash:" + minNode.getBoard().hashCode());
-
-        /* if (!isTwin) {
-            int i = 0;
-            int thisHash = minNode.getBoard().hashCode();
-            for (Iterator it = hashes.iterator(); it.hasNext(); ) {
-                SearchNode thatNode = (SearchNode) it.next();
-                if (thisHash == thatNode.getBoard().hashCode())
-                    StdOut.print(" - Duplicate Board " + i);
-                i++;
-            }
-
-            hashes.addFirst(minNode);
-            if (hashes.size() >= HASHES_TO_STORE) hashes.removeLast();
-        }*/
 
         if (minNode.getBoard().isGoal()) {
             return minNode;
         }
-        int move = minNode.getMoves()+1;
         for (Board nbrs : minNode.getBoard().neighbors()) {
             if (prevNode != null && nbrs.equals(prevNode.getBoard())) continue;
-            q.insert(new SearchNode(nbrs, move, minNode));
+            SearchNode nbrNode = new SearchNode(nbrs, minNode.getMoves() + 1, minNode, minNode.isTwin());
+            if (nbrNode.getPriority() < minNode.getPriority()) continue;
+            q.insert(nbrNode);
         }
         return null;
     }
 
-    // is the initial board solvable? (see below)
+    /**
+     * @return is the initial board state solvable
+     */
     public boolean isSolvable() { return isSolvable; }
 
-    // min number of moves to solve initial board; -1 if unsolvable
+    /**
+     * @return min number of moves to solve initial board; -1 if unsolvable
+     */
     public int moves() { return moves; }
 
-    public int getQueueSize() { return queueSize; }
-
-    // sequence of boards in a shortest solution; null if unsolvable
+    /**
+     * @return sequence of boards in a shortest solution; null if unsolvable
+     */
     public Iterable<Board> solution() {
         ArrayList<Board> solution = new ArrayList<Board>();
         for (SearchNode node : solutionNode) {
-            // StdOut.print(node.getBoard().toString());
             solution.add(node.getBoard());
         }
         return solution;
     }
 
+    /*
+    * Wrapper class for a board state which includes the board, the number of
+    * moves to reach, and the previous board state
+     */
     private class SearchNode implements Comparable<SearchNode>, Iterable<SearchNode> {
         private Board b;
         private int m;
         private SearchNode pN;
-        private int priority;
-        private int hash;
+        private int manhattan, hamming;
+        private boolean twin;
 
 
-        public SearchNode(Board board, int moves, SearchNode prevNode) {
+        public SearchNode(Board board, int moves, SearchNode prevNode, boolean isTwin) {
             b = board;
             m = moves;
             pN = prevNode;
-            hash = b.hashCode();
-
-            priority = moves + board.manhattan();
+            manhattan = board.manhattan();
+            hamming = board.hamming();
+            twin = isTwin;
         }
 
         public Board getBoard() { return b; }
         public int getMoves() { return m; }
         public SearchNode getPrevNode() { return pN; }
-        public int getPriority() { return priority; }
+        public int getPriority() { return manhattan + m; }
         public String toString() { return b.toString(); }
-        public int hashCode() { return hash; }
+        public boolean isTwin() { return twin; }
 
+        /*
+        * Heuristic analysis that drives the A* algorithm on most likely correct
+        * path. Compares two board states to determine which is "minimum" or more
+        * likely to be the shortest path to the solution.
+         */
         public int compareTo(SearchNode that) {
-            int priorityComp = Integer.compare(priority, that.priority);
+            // Compares manhattan priorities (manhattan value + # of moves)
+            int priorityComp = Integer.compare(manhattan + m, that.manhattan + that.m);
             if (priorityComp != 0) return priorityComp;
-            int manhattanComp = Integer.compare(b.manhattan(), that.b.manhattan());
-            if (manhattanComp != 0) return manhattanComp;
-            int hamPriorityComp = Integer.compare((b.hamming() + getMoves()), (that.b.hamming() + that.getMoves()));
-            if (hamPriorityComp != 0) return hamPriorityComp;
-            int hamComp = Integer.compare(b.hamming(), that.b.hamming());
-            if (hamComp != 0) return hamComp;
-            return 0;
 
-            /*// last resort
-            int thisMinNeighborPriority = priority + 10;
-            for (Board neighbor : b.neighbors()) {
-                if (neighbor.manhattan() < thisMinNeighborPriority) thisMinNeighborPriority = neighbor.manhattan();
-            }
-            int thatMinNeighborPriority = priority + 10;
-            for (Board neighbor : that.b.neighbors()) {
-                if (neighbor.manhattan() < thatMinNeighborPriority) thatMinNeighborPriority = neighbor.manhattan();
-            }
-            return Integer.compare(thisMinNeighborPriority, thatMinNeighborPriority);*/
+            // Compares the hamming priority (hamming value + moves)
+            int hamPriorityComp = Integer.compare((hamming + m), (that.hamming + that.m));
+            if (hamPriorityComp != 0) return hamPriorityComp;
+
+            // Compares the manhattan values
+            int manhattanComp = Integer.compare(manhattan, that.manhattan);
+            if (manhattanComp != 0) return manhattanComp;
+
+            // Compares the hamming values
+            return Integer.compare(hamming, that.hamming);
         }
 
+        // returns an iterator for the search nodes
         public Iterator<SearchNode> iterator() {
             return new SearchNodeIterator(this);
         }
 
+        // traverses up the SearchNodes by previous nodes until at the initial board state
+        // does so in reverse (initial state -> solution)
         private class SearchNodeIterator implements Iterator<SearchNode> {
             private Stack<SearchNode> reverseOrder = new Stack<SearchNode>();
 
@@ -192,8 +220,9 @@ public class Solver {
         }
     }
 
-    // test client (see below)
+    // test client
     public static void main(String[] args) {
+
         // create initial board from file
         In in = new In(args[0]);
         int n = in.readInt();
@@ -206,18 +235,13 @@ public class Solver {
         // solve the puzzle
         Solver solver = new Solver(initial);
 
-        // StdOut.println("moves: " + solver.moves());
-
-        // TODO: reformat to provided main jic
         // print solution to standard output
         if (!solver.isSolvable())
             StdOut.println("No solution possible");
         else {
-            // StdOut.println("Minimum number of moves = " + solver.moves());
+            StdOut.println("Minimum number of moves = " + solver.moves());
             for (Board board : solver.solution())
-                StdOut.print(board);
-            StdOut.println(" moves:" + solver.moves() + " size:" + n + " queueSize:" + solver.getQueueSize());
+                StdOut.println(board);
         }
     }
-
 }

@@ -25,13 +25,30 @@ public class TestAllPuzzles {
                     tiles[i][j] = in.readInt();
             Board initial = new Board(tiles);
 
-            // solve the puzzle
+            String fileMovesString = name.substring(name.length() - 6, name.length() - 4);
+            int expectedMoves;
+            if (fileMovesString.startsWith("e") || fileMovesString.startsWith("l")) expectedMoves = -1;
+            else expectedMoves = Integer.parseInt(fileMovesString);
+
+            if (expectedMoves > 35) {
+                StdOut.println(" - skipped");
+                continue;
+            }
+
             Solver solver = new Solver(initial);
 
             if (!solver.isSolvable())
-                StdOut.println(" No solution possible");
+                if (expectedMoves == solver.moves()) StdOut.println(" No solution possible");
+                else {
+                    StdOut.println(" ERROR! - on file " + name + " expected solvable in " + expectedMoves + " got unsolvable");
+                    return;
+                }
             else {
-                StdOut.println(" moves:" + solver.moves() + " size:" + n + " queueSize:" + solver.getQueueSize());
+                if (expectedMoves == solver.moves()) StdOut.println(" size:" + n + " moves:" + solver.moves());
+                else {
+                    StdOut.println(" ERROR! - on file " + name + " expected # of moves " + expectedMoves + ", took " + solver.moves() + " moves");
+                    return;
+                }
             }
 
             solver = null;
