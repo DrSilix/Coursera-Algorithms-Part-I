@@ -133,7 +133,7 @@ public class Board {
                 if (k == 0) continue; // exclude 0 space
                 eX = (k - 1) % n;
                 eY = (k - 1) / n;
-                manhattan += Math.abs((eX - cX) + (eY - cY));
+                manhattan += Math.abs((eX - cX)) + Math.abs((eY - cY));
             }
         }
         return manhattan;

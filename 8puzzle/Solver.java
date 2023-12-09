@@ -50,14 +50,12 @@
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
+import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 public class Solver {
-    private SearchNode solutionNode;
+    private Queue<Board> solution;
     private boolean isSolvable;
     private int moves;
 
@@ -88,14 +86,14 @@ public class Solver {
             // step forward a solver for the main board
             SearchNode r = stepSolution(pq);
             if (r != null) {
+                solution = new Queue<Board>();
                 if (r.isTwin()) {
                     moves = -1;
-                    solutionNode = null;
                     isSolvable = false;
                     return;
                 }
                 moves = r.getMoves();
-                solutionNode = r;
+                buildSolution(r);
                 return;
             }
         }
@@ -112,11 +110,10 @@ public class Solver {
     private SearchNode stepSolution(MinPQ<SearchNode> q) {
         SearchNode minNode = q.delMin();
         SearchNode prevNode = minNode.getPrevNode();
+        Board minNodeBoard = minNode.getBoard();
 
-        if (minNode.getBoard().isGoal()) {
-            return minNode;
-        }
-        for (Board nbrs : minNode.getBoard().neighbors()) {
+        if (minNodeBoard.isGoal()) { return minNode; }
+        for (Board nbrs : minNodeBoard.neighbors()) {
             if (prevNode != null && nbrs.equals(prevNode.getBoard())) continue;
             SearchNode nbrNode = new SearchNode(nbrs, minNode.getMoves() + 1, minNode, minNode.isTwin());
             if (nbrNode.getPriority() < minNode.getPriority()) continue;
@@ -139,22 +136,31 @@ public class Solver {
      * @return sequence of boards in a shortest solution; null if unsolvable
      */
     public Iterable<Board> solution() {
-        ArrayList<Board> solution = new ArrayList<Board>();
-        for (SearchNode node : solutionNode) {
-            solution.add(node.getBoard());
-        }
-        return solution;
+        if (solution.size() == 0) return null;
+        Stack<Board> copy = new Stack<Board>();
+        for (Board b : solution)
+            copy.push(b);
+        return copy;
+    }
+
+    // fills the solution queue with the boards in reverse solution order
+    private void buildSolution(SearchNode node) {
+            solution.enqueue(node.getBoard());
+            while (node.getPrevNode() != null) {
+                solution.enqueue(node.getPrevNode().getBoard());
+                node = node.getPrevNode();
+            }
     }
 
     /*
     * Wrapper class for a board state which includes the board, the number of
     * moves to reach, and the previous board state
      */
-    private class SearchNode implements Comparable<SearchNode>, Iterable<SearchNode> {
+    private class SearchNode implements Comparable<SearchNode> {
         private Board b;
         private int m;
         private SearchNode pN;
-        private int manhattan, hamming;
+        private int manhattan;
         private boolean twin;
 
 
@@ -163,7 +169,6 @@ public class Solver {
             m = moves;
             pN = prevNode;
             manhattan = board.manhattan();
-            hamming = board.hamming();
             twin = isTwin;
         }
 
@@ -181,42 +186,9 @@ public class Solver {
          */
         public int compareTo(SearchNode that) {
             // Compares manhattan priorities (manhattan value + # of moves)
-            int priorityComp = Integer.compare(manhattan + m, that.manhattan + that.m);
-            if (priorityComp != 0) return priorityComp;
-
-            // Compares the hamming priority (hamming value + moves)
-            int hamPriorityComp = Integer.compare((hamming + m), (that.hamming + that.m));
-            if (hamPriorityComp != 0) return hamPriorityComp;
-
-            // Compares the manhattan values
-            int manhattanComp = Integer.compare(manhattan, that.manhattan);
-            if (manhattanComp != 0) return manhattanComp;
-
-            // Compares the hamming values
-            return Integer.compare(hamming, that.hamming);
-        }
-
-        // returns an iterator for the search nodes
-        public Iterator<SearchNode> iterator() {
-            return new SearchNodeIterator(this);
-        }
-
-        // traverses up the SearchNodes by previous nodes until at the initial board state
-        // does so in reverse (initial state -> solution)
-        private class SearchNodeIterator implements Iterator<SearchNode> {
-            private Stack<SearchNode> reverseOrder = new Stack<SearchNode>();
-
-            public SearchNodeIterator(SearchNode s) {
-                SearchNode current = s;
-                reverseOrder.push(current);
-                while (current.getPrevNode() != null) {
-                    reverseOrder.push(current.getPrevNode());
-                    current = current.getPrevNode();
-                }
-            }
-
-            public boolean hasNext() { return !reverseOrder.isEmpty(); }
-            public SearchNode next() { return reverseOrder.pop(); }
+            int manComp = Integer.compare(manhattan + m, that.manhattan + that.m);
+            if (manComp != 0) return manComp;
+            return Integer.compare(manhattan, that.manhattan);
         }
     }
 
