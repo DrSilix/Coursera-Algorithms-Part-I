@@ -16,5 +16,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="algs4" level="project" />
+    <orderEntry type="library" exported="" name="junit.jupiter" level="project" />
   </component>
 </module>
