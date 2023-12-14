@@ -14,6 +14,7 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.SET;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.StdOut;
 
 import java.awt.Color;
 
@@ -97,5 +98,14 @@ public class PointSET {
         StdDraw.setPenRadius(0.01);
         brute.draw();
         StdDraw.show();
+
+        Point2D testNear = new Point2D(0.81, 0.30);
+        Point2D nearest = brute.nearest(testNear);
+        StdDraw.setPenColor(Color.ORANGE);
+        StdDraw.setPenRadius(0.01);
+        nearest.draw();
+        testNear.draw();
+        StdDraw.show();
+        StdOut.println("Point " + nearest.toString() + " was the nearest");
     }
 }
