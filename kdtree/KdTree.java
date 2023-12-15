@@ -14,9 +14,9 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdRandom;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.util.ArrayList;
 
 public class KdTree {
@@ -25,34 +25,36 @@ public class KdTree {
 
     private int size;
     private Node root;
-    private int debugNum;
-    private int debugContainsCalls;
-    private int debugRangeCalls;
-    private int debugNearestCalls;
-    private int debugNearestCallsWhenChampFound;
+    // private int debugNum;
+    // private int debugContainsCalls;
+    // private int debugRangeCalls;
+    // private int debugNearestCalls;
+    // private int debugNearestCallsWhenChampFound;
+    // private int debugNearestNumberOfChamps;
 
     private static class Node {
         private Point2D p;
         private RectHV r;
         private Node lb;
         private Node rt;
-        private int i;
+        // private int i;
 
         public Node(Point2D point) {
             p = point;
         }
 
-        public String toString() { return p.toString() + ":" + r.toString(); }
+        // public String toString() { return p.toString() + ":" + r.toString(); }
     }
 
-    public int getDebugRangeCalls() { return debugRangeCalls; }
-    public int getDebugNearestCalls() { return debugNearestCalls; }
-    public int getDebugNearestCallsWhenChampFound() { return debugNearestCallsWhenChampFound; }
+    // public int getDebugRangeCalls() { return debugRangeCalls; }
+    // public int getDebugNearestCalls() { return debugNearestCalls; }
+    // public int getDebugNearestCallsWhenChampFound() { return debugNearestCallsWhenChampFound; }
+    // public int getDebugNearestNumberOfChamps() { return debugNearestNumberOfChamps; }
 
     // construct an empty points KdTree
     public KdTree() {
         size = 0;
-        debugNum = 0;
+        // debugNum = 0;
     }
 
     // is the set empty?
@@ -73,7 +75,7 @@ public class KdTree {
             Node n = new Node(point);
             if (size == 0) { n.r = new RectHV(0.0, 0.0, 1.0, 1.0); }
             size++;
-            n.i = ++debugNum;
+            // n.i = ++debugNum;
             return n;
         }
         if (point.compareTo(node.p) == 0) { return node; }
@@ -100,12 +102,12 @@ public class KdTree {
 
     // does the set contain point p?
     public boolean contains(Point2D p) {
-        debugContainsCalls = 1;
+        // debugContainsCalls = 1;
         return contains(root, p, X_ALIGNED);
     }
 
     private boolean contains(Node node, Point2D point, boolean orientation) {
-        debugContainsCalls++;
+        // debugContainsCalls++;
         if (node == null) { return false; }
         if (node.p.compareTo(point) == 0) { return true; }
         if (!orientation) {
@@ -123,15 +125,41 @@ public class KdTree {
         }
     }
 
+    /* // does the set contain point p?
+    public int pointDepth(Point2D p) {
+        int depth = 0;
+        return pointDepth(root, p, X_ALIGNED, depth);
+    }
+
+    private int pointDepth(Node node, Point2D point, boolean orientation, int depth) {
+        if (node == null) { return depth; }
+        depth++;
+        if (node.p.compareTo(point) == 0) { return depth; }
+        if (!orientation) {
+            if (point.x() < node.p.x()) {
+                depth = pointDepth(node.lb, point, Y_ALIGNED, depth);
+            } else {  // if greater than or the same
+                depth = pointDepth(node.rt, point, Y_ALIGNED, depth);
+            }
+        } else {
+            if (point.y() < node.p.y()) {
+                depth = pointDepth(node.lb, point, X_ALIGNED, depth);
+            } else {  // if greater than or the same
+                depth = pointDepth(node.rt, point, X_ALIGNED, depth);
+            }
+        }
+        return depth;
+    }*/
+
     // draw all points to standard draw
     public void draw() { draw(root, X_ALIGNED); }
 
     private void draw(Node node, boolean orientation) {
-        /* StdDraw.setPenColor(Color.black);
+        StdDraw.setPenColor(Color.black);
         StdDraw.setPenRadius(0.01);
-        node.p.draw(); */
-        StdDraw.setFont(new Font("Sans Serif", Font.PLAIN, 10));
-        StdDraw.text(node.p.x() + 0.008, node.p.y() - 0.008, Integer.toString(node.i));
+        node.p.draw();
+        // StdDraw.setFont(new Font("Sans Serif", Font.PLAIN, 10));
+        // StdDraw.text(node.p.x() + 0.008, node.p.y() - 0.008, Integer.toString(node.i));
         // StdOut.println("drawing point " + node.toString());
         StdDraw.setPenRadius(0.001);
         if (!orientation) {
@@ -151,13 +179,13 @@ public class KdTree {
 
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
-        debugRangeCalls = 1;
+        // debugRangeCalls = 1;
         Stack<Point2D> result = new Stack<Point2D>();
         return range(root, rect, result);
     }
 
     private Stack<Point2D> range(Node node, RectHV rect, Stack<Point2D> result) {
-        debugRangeCalls++;
+        // debugRangeCalls++;
         if (node.lb != null && rect.intersects(node.lb.r)) result = range(node.lb, rect, result);
         if (node.rt != null && rect.intersects(node.rt.r)) result = range(node.rt, rect, result);
         if (rect.contains(node.p)) result.push(node.p);
@@ -166,7 +194,7 @@ public class KdTree {
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
-        debugNearestCalls = 1;
+        // debugNearestCalls = 1;
         Point2D champion = root.p;
         return nearest(root, p, champion, X_ALIGNED);
     }
@@ -175,12 +203,13 @@ public class KdTree {
         if (node == null) return champion;
         if (champion.distanceSquaredTo(point) < node.r.distanceSquaredTo(point)) return champion;
 
-        debugNearestCalls++;
+        // debugNearestCalls++;
         StdDraw.setPenColor(Color.blue);
         StdDraw.setPenRadius(0.01);
         node.p.draw();
         if (champion.distanceSquaredTo(point) > node.p.distanceSquaredTo(point)) {
-            debugNearestCallsWhenChampFound = debugNearestCalls;
+            // debugNearestCallsWhenChampFound = debugNearestCalls;
+            // debugNearestNumberOfChamps++;
             champion = node.p;
         }
 
@@ -205,14 +234,14 @@ public class KdTree {
         return champion;
     }
 
-    private void sleep(int milliseconds) {
+    /* private void sleep(int milliseconds) {
         try {
             Thread.sleep(milliseconds);
         }
         catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     // unit testing of the methods (optional)
     public static void main(String[] args) {
@@ -235,16 +264,16 @@ public class KdTree {
             // StdOut.println(kdtree.size());
         }
 
-        // StdDraw.setPenColor(Color.black);
-        // StdDraw.setPenRadius(0.01);
-        // kdtree.draw();
-        // StdDraw.show();
+        StdDraw.setPenColor(Color.black);
+        StdDraw.setPenRadius(0.01);
+        kdtree.draw();
+        StdDraw.show();
 
-        StdOut.println("random point: " + kdtree.contains(new Point2D(0.920132, 0.228911)) + " - contains was called:" + kdtree.debugContainsCalls);
+        StdOut.println("random point: " + kdtree.contains(new Point2D(StdRandom.uniformDouble(), StdRandom.uniformDouble()))); // + " - contains was called:" + kdtree.debugContainsCalls);
         StdOut.println(kdtree.size());
 
         /* for (Point2D p : points) {
-            StdOut.println(p.toString() + ": " + kdtree.contains(p) + " - contains was called:" + kdtree.debugContainsCalls);
+            StdOut.println(p.toString() + ": " + kdtree.contains(p)); // + " at depth " + kdtree.pointDepth(p) + " - contains was called:" + kdtree.debugContainsCalls);
         }*/
 
         /* RectHV testRect = new RectHV(0.75, 0.7, 0.9, 1);
@@ -257,21 +286,22 @@ public class KdTree {
             StdDraw.setPenRadius(0.03);
             p.draw();
             StdDraw.show();
-        }
-        StdOut.println("Range was called: " + kdtree.debugRangeCalls);*/
+        }*/
+        // StdOut.println("Range was called: " + kdtree.debugRangeCalls);*/
 
-        Point2D testNear = new Point2D(0.81, 0.30);
+        Point2D testNear = new Point2D(0.884765625, 0.884765625);
         Point2D nearest = kdtree.nearest(testNear);
         StdDraw.setPenColor(Color.ORANGE);
         StdDraw.setPenRadius(0.01);
         nearest.draw();
         testNear.draw();
         StdDraw.show();
-        StdOut.println("Point " + nearest.toString() + " was the nearest and nearest() was called: " + kdtree.debugNearestCalls + " the champion was found after " + kdtree.debugNearestCallsWhenChampFound + " calls");
+        StdOut.println("Point " + nearest.toString() + " was the nearest"); // and nearest() was called: " + kdtree.debugNearestCalls + " the champion was found after " + kdtree.debugNearestCallsWhenChampFound + " calls, number of champs: " + kdtree.debugNearestNumberOfChamps);
+        // StdOut.println(nearest.toString() + ": " + kdtree.contains(nearest) + " at depth " + kdtree.pointDepth(nearest) + " - contains was called:" + kdtree.debugContainsCalls);
 
-        RectHV exampleRect = new RectHV(0.4, 0.3, 0.8, 0.6);
+        /* RectHV exampleRect = new RectHV(0.4, 0.3, 0.8, 0.6);
         Point2D exampleP1 = new Point2D(0.1, 0.4);
         Point2D exampleP2 = new Point2D(0.0, 0.0);
-        StdOut.println("exampleP1 distance = " + exampleRect.distanceTo(exampleP1) + ", exampleP2 distance = " + exampleRect.distanceTo(exampleP2));
+        StdOut.println("exampleP1 distance = " + exampleRect.distanceTo(exampleP1) + ", exampleP2 distance = " + exampleRect.distanceTo(exampleP2));*/
     }
 }

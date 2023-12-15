@@ -41,6 +41,7 @@ public class NearestNeighborVisualizer {
             double x = StdDraw.mouseX();
             double y = StdDraw.mouseY();
             Point2D query = new Point2D(x, y);
+            StdOut.println(query.toString());
 
             // draw all of the points
             StdDraw.clear();
@@ -57,10 +58,10 @@ public class NearestNeighborVisualizer {
             // draw in blue the nearest neighbor (using kd-tree algorithm)
             StdDraw.setPenColor(StdDraw.BLUE);
             kdtree.nearest(query).draw();
-            StdOut.println("KdTree nearest() calls: " + kdtree.getDebugNearestCalls() + " the champion was found after " + kdtree.getDebugNearestCallsWhenChampFound() + " calls");
+            // StdOut.println("KdTree nearest() calls: " + kdtree.getDebugNearestCalls() + " the champion was found after " + kdtree.getDebugNearestCallsWhenChampFound() + " calls");
             // kdtree.draw();
             StdDraw.show();
-            StdDraw.pause(500);
+            StdDraw.pause(40);
         }
     }
 }

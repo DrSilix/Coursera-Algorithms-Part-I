@@ -94,12 +94,13 @@ public class PointSET {
 
         StdDraw.enableDoubleBuffering();
         StdDraw.clear();
+        StdDraw.setCanvasSize(1000, 1000);
         StdDraw.setPenColor(Color.black);
         StdDraw.setPenRadius(0.01);
         brute.draw();
         StdDraw.show();
 
-        Point2D testNear = new Point2D(0.81, 0.30);
+        Point2D testNear = new Point2D(0.884765625, 0.884765625);
         Point2D nearest = brute.nearest(testNear);
         StdDraw.setPenColor(Color.ORANGE);
         StdDraw.setPenRadius(0.01);
