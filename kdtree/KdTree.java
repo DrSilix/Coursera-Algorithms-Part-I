@@ -1,7 +1,7 @@
 /* *****************************************************************************
  *  Name:              Alex Hackl
  *  Coursera User ID:  alexhackl@live.com
- *  Last modified:     12/13/2023
+ *  Last modified:     12/15/2023
  *
  *  Compilation: javac-algs4 KdTree.java
  *  Execution: java-algs4 KdTree
@@ -27,6 +27,7 @@ public class KdTree {
 
     private int size;
     private Node root;
+    private int debugRangeCalls;
 
     private static class Node {
         private Point2D p;
@@ -53,6 +54,7 @@ public class KdTree {
 
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("Argument cannot be null");
         root = insert(root, p, X_ALIGNED);
     }
 
@@ -83,10 +85,11 @@ public class KdTree {
 
     // x_aligned left branch = buildNextNodeRect(rect, node.p, X_MAX)
     // x_aligned right branch = buildNextNodeRect(rect, node.p, X_MIN)
-    // y_aligned left branch = buildNextNodeRect(rect, node.p, Y_MAX)
-    // y_aligned right branch = buildNextNodeRect(rect, node.p, Y_MIN)
-
-    private RectHV buildNextNodeRect(RectHV prevRect, Point2D point, byte xyMinMax) {
+    // y_aligned left/bottom branch = buildNextNodeRect(rect, node.p, Y_MAX)
+    // y_aligned right/top branch = buildNextNodeRect(rect, node.p, Y_MIN)
+    // takes in a rect and uses a point to create and change a new rect with the
+    // xy value determined by xyMinMax
+    private static RectHV buildNextNodeRect(RectHV prevRect, Point2D point, byte xyMinMax) {
         switch(xyMinMax) {
             case X_MIN:
                 return new RectHV(point.x(), prevRect.ymin(), prevRect.xmax(), prevRect.ymax());
@@ -99,19 +102,9 @@ public class KdTree {
         }
     }
 
-    private void drawPointAndRect (Point2D point, RectHV rect) {
-        StdDraw.setPenColor(Color.black);
-        StdDraw.setPenRadius(0.01);
-        point.draw();
-        StdDraw.setPenColor(Color.getHSBColor((float) point.x(), 1, 0.5f));
-        StdDraw.setPenRadius(0.005);
-        rect.draw();
-        StdDraw.show();
-        sleep(500);
-    }
-
     // does the set contain point p?
     public boolean contains(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("Argument cannot be null");
         return contains(root, p, X_ALIGNED);
     }
 
@@ -137,52 +130,52 @@ public class KdTree {
     public void draw() { draw(root, X_ALIGNED, UNIT_SQUARE); }
 
     private void draw(Node node, boolean orientation, RectHV rect) {
+        if (node == null) return;
         StdDraw.setPenColor(Color.black);
         StdDraw.setPenRadius(0.01);
         node.p.draw();
-        StdDraw.setPenRadius(0.001);
+        StdDraw.setPenRadius();
         if (!orientation) {
             StdDraw.setPenColor(Color.red);
             StdDraw.line(node.p.x(), rect.ymin(), node.p.x(), rect.ymax());
-            if (node.lb != null) { draw(node.lb, Y_ALIGNED, buildNextNodeRect(rect, node.p, X_MAX)); }
-            if (node.rt != null) { draw(node.rt, Y_ALIGNED, buildNextNodeRect(rect, node.p, X_MIN)); }
+            if (node.lb != null) draw(node.lb, Y_ALIGNED, buildNextNodeRect(rect, node.p, X_MAX));
+            if (node.rt != null) draw(node.rt, Y_ALIGNED, buildNextNodeRect(rect, node.p, X_MIN));
         } else {
             StdDraw.setPenColor(Color.blue);
             StdDraw.line(rect.xmin(), node.p.y(), rect.xmax(), node.p.y());
-            if (node.lb != null) { draw(node.lb, X_ALIGNED, buildNextNodeRect(rect, node.p, Y_MAX)); }
-            if (node.rt != null) { draw(node.rt, X_ALIGNED, buildNextNodeRect(rect, node.p, Y_MIN)); }
+            if (node.lb != null) draw(node.lb, X_ALIGNED, buildNextNodeRect(rect, node.p, Y_MAX));
+            if (node.rt != null) draw(node.rt, X_ALIGNED, buildNextNodeRect(rect, node.p, Y_MIN));
         }
         StdDraw.show();
     }
 
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) throw new IllegalArgumentException("Argument cannot be null");
+        debugRangeCalls = 0;
         Stack<Point2D> result = new Stack<Point2D>();
-        return range(root, rect, result, X_ALIGNED, UNIT_SQUARE);
+        return range(root, rect, result, X_ALIGNED);
     }
 
-    private Stack<Point2D> range(Node node, RectHV queryRect, Stack<Point2D> result, boolean orientation, RectHV currRect) {
+    private Stack<Point2D> range(Node node, RectHV queryRect, Stack<Point2D> result, boolean orientation) {
         if (node == null) return result;
+        debugRangeCalls++;
 
         if (!orientation) {
-            RectHV leftRect = buildNextNodeRect(currRect, node.p, X_MAX);
-            if (queryRect.intersects(leftRect)) {
-                result = range(node.lb, queryRect, result, Y_ALIGNED, leftRect);
+            boolean intrsSplittingLineSeg = queryRect.intersects(new RectHV(node.p.x(), 0, node.p.x(), 1));
+            if (intrsSplittingLineSeg || queryRect.xmin() < node.p.x()) {
+                result = range(node.lb, queryRect, result, Y_ALIGNED);
             }
-
-            RectHV rightRect = buildNextNodeRect(currRect, node.p, X_MIN);
-            if (queryRect.intersects(rightRect)) {  // if greater than or the same
-                result = range(node.rt, queryRect, result, Y_ALIGNED, rightRect);
+            if (intrsSplittingLineSeg || queryRect.xmin() > node.p.x()) {
+                result = range(node.rt, queryRect, result, Y_ALIGNED);
             }
         } else {
-            RectHV bottomRect = buildNextNodeRect(currRect, node.p, Y_MAX);
-            if (queryRect.intersects(bottomRect)) {
-                result = range(node.lb, queryRect, result, X_ALIGNED, bottomRect);
+            boolean intrsSplittingLineSeg = queryRect.intersects(new RectHV(0, node.p.y(), 1, node.p.y()));
+            if (intrsSplittingLineSeg || queryRect.ymin() < node.p.y()) {
+                result = range(node.lb, queryRect, result, X_ALIGNED);
             }
-
-            RectHV topRect = buildNextNodeRect(currRect, node.p, Y_MIN);
-            if (queryRect.intersects(topRect)) {  // if greater than or the same
-                result = range(node.rt, queryRect, result, X_ALIGNED, topRect);
+            if (intrsSplittingLineSeg || queryRect.ymin() > node.p.y()) {
+                result = range(node.rt, queryRect, result, X_ALIGNED);
             }
         }
         if (queryRect.contains(node.p)) result.push(node.p);
@@ -191,21 +184,16 @@ public class KdTree {
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("Argument cannot be null");
+        if (size == 0) return null;
         Point2D champion = root.p;
         return nearest(root, p, champion, X_ALIGNED, UNIT_SQUARE);
     }
 
-    // x_aligned left branch = buildNextNodeRect(rect, node.p, X_MAX)
-    // x_aligned right branch = buildNextNodeRect(rect, node.p, X_MIN)
-    // y_aligned left branch = buildNextNodeRect(rect, node.p, Y_MAX)
-    // y_aligned right branch = buildNextNodeRect(rect, node.p, Y_MIN)
     private Point2D nearest(Node node, Point2D point, Point2D champion, boolean orientation, RectHV rect) {
         if (node == null) return champion;
         if (champion.distanceSquaredTo(point) < rect.distanceSquaredTo(point)) return champion;
 
-        /* StdDraw.setPenColor(Color.blue);
-        StdDraw.setPenRadius(0.01);
-        node.p.draw();*/
         if (champion.distanceSquaredTo(point) > node.p.distanceSquaredTo(point)) {
             champion = node.p;
         }
@@ -228,15 +216,6 @@ public class KdTree {
             }
         }
         return champion;
-    }
-
-    private void sleep(int milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     // unit testing of the methods (optional)
@@ -269,9 +248,9 @@ public class KdTree {
         /* StdOut.println("random point: " + kdtree.contains(new Point2D(StdRandom.uniformDouble(), StdRandom.uniformDouble()))); // + " - contains was called:" + kdtree.debugContainsCalls);
         StdOut.println(kdtree.size());*/
 
-        /* for (Point2D p : points) {
+        for (Point2D p : points) {
             StdOut.println(p.toString() + ": " + kdtree.contains(p));
-        }*/
+        }
 
         RectHV testRect = new RectHV(0.75, 0.7, 0.9, 1);
         StdDraw.setPenColor(Color.green);
@@ -284,16 +263,16 @@ public class KdTree {
             p.draw();
             StdDraw.show();
         }
-        // StdOut.println("Range was called: " + kdtree.debugRangeCalls);*/
+        StdOut.println("Range was called: " + kdtree.debugRangeCalls);
 
-        /* Point2D testNear = new Point2D(0.884765625, 0.884765625);
+        Point2D testNear = new Point2D(0.81, 0.30);
         Point2D nearest = kdtree.nearest(testNear);
         StdDraw.setPenColor(Color.ORANGE);
         StdDraw.setPenRadius(0.01);
         nearest.draw();
         testNear.draw();
         StdDraw.show();
-        StdOut.println("Point " + nearest.toString() + " was the nearest");*/ // and nearest() was called: " + kdtree.debugNearestCalls + " the champion was found after " + kdtree.debugNearestCallsWhenChampFound + " calls, number of champs: " + kdtree.debugNearestNumberOfChamps);
+        StdOut.println("Point " + nearest.toString() + " was the nearest"); // and nearest() was called: " + kdtree.debugNearestCalls + " the champion was found after " + kdtree.debugNearestCallsWhenChampFound + " calls, number of champs: " + kdtree.debugNearestNumberOfChamps);
         // StdOut.println(nearest.toString() + ": " + kdtree.contains(nearest) + " at depth " + kdtree.pointDepth(nearest) + " - contains was called:" + kdtree.debugContainsCalls);
     }
 }

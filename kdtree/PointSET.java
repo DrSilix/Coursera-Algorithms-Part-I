@@ -1,7 +1,7 @@
 /* *****************************************************************************
  *  Name:              Alex Hackl
  *  Coursera User ID:  alexhackl@live.com
- *  Last modified:     12/11/2023
+ *  Last modified:     12/15/2023
  *
  *  Compilation: javac-algs4 PointSET.java
  *  Execution: java-algs4 PointSET
@@ -40,12 +40,15 @@ public class PointSET {
 
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("Argument cannot be null");
+        if (bst.contains(p)) return;
         bst.add(p);
         size++;
     }
 
     // does the set contain point p?
     public boolean contains(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("Argument cannot be null");
         return bst.contains(p);
     }
 
@@ -58,6 +61,7 @@ public class PointSET {
 
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) throw new IllegalArgumentException("Argument cannot be null");
         Stack<Point2D> result = new Stack<Point2D>();
         for (Point2D p : bst) {
             if (rect.contains(p)) result.push(p);
@@ -67,6 +71,7 @@ public class PointSET {
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("Argument cannot be null");
         Point2D champion = null;
         double champDist = 1;
         for (Point2D n : bst) {
@@ -100,7 +105,7 @@ public class PointSET {
         brute.draw();
         StdDraw.show();
 
-        Point2D testNear = new Point2D(0.884765625, 0.884765625);
+        Point2D testNear = new Point2D(0.81, 0.30);
         Point2D nearest = brute.nearest(testNear);
         StdDraw.setPenColor(Color.ORANGE);
         StdDraw.setPenRadius(0.01);

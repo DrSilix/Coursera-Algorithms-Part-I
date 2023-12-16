@@ -17,5 +17,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="algs4" level="project" />
     <orderEntry type="library" exported="" name="junit.jupiter" level="project" />
+    <orderEntry type="library" scope="TEST" name="mockito.all" level="project" />
+    <orderEntry type="library" exported="" name="mockito.core" level="project" />
   </component>
 </module>
