@@ -102,6 +102,15 @@ public class UnitTests {
     }
 
     @Test
+    void nearestCallSETFailed(){
+        PointSET set = new PointSET();
+        set.insert(new Point2D(0.0, 0.0));
+        assert set.size() == 1;
+        assert !set.range(new RectHV(1, 1, 1, 1)).iterator().hasNext();
+        assert set.nearest(new Point2D(1.0, 0.0)).compareTo(new Point2D(0.0, 0.0)) == 0;
+    }
+
+    @Test
     void checkEmptyKdTree() {
         KdTree kdtree = new KdTree();
         assert kdtree.size() == 0;

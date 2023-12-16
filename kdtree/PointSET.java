@@ -132,10 +132,10 @@ public class PointSET {
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Argument cannot be null");
         Point2D champion = null;
-        double champDist = 1;
+        double champDist = -1;
         for (Point2D n : bst) {
-            double d = p.distanceTo(n);
-            if (d < champDist) {
+            double d = p.distanceSquaredTo(n);
+            if (d < champDist || champDist < 0) {
                 champDist = d;
                 champion = n;
             }
