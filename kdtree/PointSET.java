@@ -43,28 +43,26 @@ import edu.princeton.cs.algs4.StdRandom;
 
 public class PointSET {
     private SET<Point2D> bst;
-    private int size;
 
     /**
      * construct an empty SET (R-B BST) of size 0
      */
     public PointSET() {
         bst = new SET<Point2D>();
-        size = 0;
     }
 
     /**
      * @return boolean is the SET empty
      */
     public boolean isEmpty() {
-        return size == 0;
+        return bst.size() == 0;
     }
 
     /**
      * @return number of nodes in the SET
      */
     public int size() {
-        return size;
+        return bst.size();
     }
 
     /**
@@ -78,7 +76,6 @@ public class PointSET {
         if (p == null) throw new IllegalArgumentException("Argument cannot be null");
         if (bst.contains(p)) return;
         bst.add(p);
-        size++;
     }
 
     /**
