@@ -14,7 +14,6 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.StdDraw;
-import edu.princeton.cs.algs4.StdOut;
 
 public class NearestNeighborVisualizer {
 
@@ -41,7 +40,7 @@ public class NearestNeighborVisualizer {
             double x = StdDraw.mouseX();
             double y = StdDraw.mouseY();
             Point2D query = new Point2D(x, y);
-            StdOut.println(query.toString());
+            // StdOut.println(query.toString());
 
             // draw all of the points
             StdDraw.clear();
