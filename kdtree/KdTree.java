@@ -40,8 +40,6 @@ import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
-import java.awt.Color;
-
 public class KdTree {
     private static final boolean X_ALIGNED = false;
     private static final boolean Y_ALIGNED = true;
@@ -187,17 +185,17 @@ public class KdTree {
         // X_ALIGNED = false; Y_ALIGNED = TRUE;
         // orientation is swapped when recursively calling draw
         if (!orientation) {
-            StdDraw.setPenColor(Color.red);
+            StdDraw.setPenColor(StdDraw.RED);
             StdDraw.line(node.p.x(), rect.ymin(), node.p.x(), rect.ymax());
             if (node.lb != null) draw(node.lb, Y_ALIGNED, buildNextNodeRect(rect, node.p, X_MAX));
             if (node.rt != null) draw(node.rt, Y_ALIGNED, buildNextNodeRect(rect, node.p, X_MIN));
         } else {
-            StdDraw.setPenColor(Color.blue);
+            StdDraw.setPenColor(StdDraw.BLUE);
             StdDraw.line(rect.xmin(), node.p.y(), rect.xmax(), node.p.y());
             if (node.lb != null) draw(node.lb, X_ALIGNED, buildNextNodeRect(rect, node.p, Y_MAX));
             if (node.rt != null) draw(node.rt, X_ALIGNED, buildNextNodeRect(rect, node.p, Y_MIN));
         }
-        StdDraw.setPenColor(Color.black);
+        StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(0.01);
         node.p.draw();
         StdDraw.show();
@@ -329,12 +327,12 @@ public class KdTree {
         xMin /= 100;
         yMin /= 100;
         RectHV testRect = new RectHV(xMin, yMin, xMax, yMax);
-        StdDraw.setPenColor(Color.MAGENTA);
+        StdDraw.setPenColor(StdDraw.MAGENTA);
         testRect.draw();
 
         StdOut.print("Points in range " + testRect.toString() + ": ");
         for (Point2D p : kdtree.range(testRect)) {
-            StdDraw.setPenColor(Color.red);
+            StdDraw.setPenColor(StdDraw.RED);
             StdDraw.setPenRadius(0.03);
             p.draw();
             StdOut.print(p.toString() + "/");
@@ -345,7 +343,7 @@ public class KdTree {
         Point2D testNear = new Point2D(randX, randY);
         StdOut.println("\ncontains random point " + testNear + ": " + kdtree.contains(testNear));
         Point2D nearest = kdtree.nearest(testNear);
-        StdDraw.setPenColor(Color.green);
+        StdDraw.setPenColor(StdDraw.GREEN);
         StdDraw.setPenRadius(0.02);
         nearest.draw();
         StdDraw.setPenRadius(0.015);
@@ -353,7 +351,7 @@ public class KdTree {
         StdOut.println("Point " + nearest.toString() + " was the nearest to " + testNear);
         StdOut.println("contains point " + nearest.toString() + ": " + kdtree.contains(nearest));
 
-        StdDraw.setPenColor(Color.black);
+        StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(0.01);
         kdtree.draw();
         StdDraw.show();

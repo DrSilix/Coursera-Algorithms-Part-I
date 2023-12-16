@@ -41,8 +41,6 @@ import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
-import java.awt.Color;
-
 public class PointSET {
     private SET<Point2D> bst;
     private int size;
@@ -171,12 +169,12 @@ public class PointSET {
         xMin /= 100;
         yMin /= 100;
         RectHV testRect = new RectHV(xMin, yMin, xMax, yMax);
-        StdDraw.setPenColor(Color.MAGENTA);
+        StdDraw.setPenColor(StdDraw.MAGENTA);
         testRect.draw();
 
         StdOut.print("Points in range " + testRect.toString() + ": ");
         for (Point2D p : brute.range(testRect)) {
-            StdDraw.setPenColor(Color.red);
+            StdDraw.setPenColor(StdDraw.RED);
             StdDraw.setPenRadius(0.03);
             p.draw();
             StdOut.print(p.toString() + "/");
@@ -188,7 +186,7 @@ public class PointSET {
         Point2D testNear = new Point2D(randX, randY);
         StdOut.println("\ncontains random point " + testNear + ": " + brute.contains(testNear));
         Point2D nearest = brute.nearest(testNear);
-        StdDraw.setPenColor(Color.green);
+        StdDraw.setPenColor(StdDraw.GREEN);
         StdDraw.setPenRadius(0.02);
         nearest.draw();
         StdDraw.setPenRadius(0.015);
@@ -197,7 +195,7 @@ public class PointSET {
         StdOut.println("contains point " + nearest.toString() + ": " + brute.contains(nearest));
 
 
-        StdDraw.setPenColor(Color.black);
+        StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.setPenRadius(0.01);
         brute.draw();
         StdDraw.show();
