@@ -1,11 +1,35 @@
 /* *****************************************************************************
  *  Name:              Alex Hackl
  *  Coursera User ID:  alexhackl@live.com
- *  Last modified:     12/15/2023
+ *  Last modified:     12/16/2023
  *
  *  Compilation: javac-algs4 KdTree.java
  *  Execution: java-algs4 KdTree
  *  Dependencies: Point2D.java, RectHV.java
+ *
+ *  Data type to catalog a (0.0, 1.0) x (0.0, 1.0) grid of points using a
+ *  2D Kd-Tree and includes operations, isEmpty, size, insert, contains, draw,
+ *  range, and nearest. Range is used to find points that are contained within
+ *  a rectangular area and nearest finds the nearest point in the set to a
+ *  query point.
+ *
+ *  Can be called directly with a text file as argument
+ *
+ *  Argument text file formatting:
+ *  input5.txt
+ *  0.7 0.2
+ *  0.5 0.4
+ *  0.2 0.3
+ *  0.4 0.7
+ *  0.9 0.6
+ *
+ *  % java-algs4 KdTree input5.txt
+ *  is KdTree empty true. Size: 0
+ *  is KdTree empty false. Size: 5
+ *  Points in range [0.39, 0.59] x [0.31, 0.71]: (0.4, 0.7)/(0.5, 0.4)/
+ *  contains random point (0.45, 0.25): false
+ *  Point (0.5, 0.4) was the nearest to (0.45, 0.25)
+ *  contains point (0.5, 0.4): true
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.In;
@@ -14,9 +38,9 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdRandom;
 
 import java.awt.Color;
-import java.util.ArrayList;
 
 public class KdTree {
     private static final boolean X_ALIGNED = false;
@@ -27,7 +51,6 @@ public class KdTree {
 
     private int size;
     private Node root;
-    private int debugRangeCalls;
 
     private static class Node {
         private Point2D p;
@@ -37,22 +60,35 @@ public class KdTree {
         public Node(Point2D point) {
             p = point;
         }
-
-        public String toString() { return p.toString(); }
     }
 
-    // construct an empty points KdTree
+    /**
+     * construct an empty KdTree of size 0
+     */
     public KdTree() {
         size = 0;
     }
 
-    // is the set empty?
+    /**
+     * @return boolean is the KdTree empty
+     */
     public boolean isEmpty() { return size == 0; }
 
-    // number of points in the set
+    /**
+     * @return number of nodes in the KdTree
+     */
     public int size() { return size; }
 
-    // add the point to the set (if it is not already in the set)
+    /**
+     * add the point to the KdTree (if it is not already in the set) <br />
+     * <br />
+     * recursively inserts a point into the 2D KdTree alternating between comparing
+     * the <tt>x</tt> value and the <tt>y</tt> value based on tree depth
+     *
+     * @param p the Point2D to be inserted into the KdTree
+     * @throws IllegalArgumentException if <tt>p</tt> is null
+     * @see Point2D
+     */
     public void insert(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Argument cannot be null");
         root = insert(root, p, X_ALIGNED);
@@ -65,6 +101,8 @@ public class KdTree {
         }
 
         if (point.compareTo(node.p) == 0) { return node; }
+        // X_ALIGNED = false; Y_ALIGNED = TRUE;
+        // orientation is swapped when recursively calling insert
         if (!orientation) {
             if (point.x() < node.p.x()) {
                 node.lb = insert(node.lb, point, Y_ALIGNED);
@@ -87,8 +125,8 @@ public class KdTree {
     // x_aligned right branch = buildNextNodeRect(rect, node.p, X_MIN)
     // y_aligned left/bottom branch = buildNextNodeRect(rect, node.p, Y_MAX)
     // y_aligned right/top branch = buildNextNodeRect(rect, node.p, Y_MIN)
-    // takes in a rect and uses a point to create and change a new rect with the
-    // xy value determined by xyMinMax
+    // takes in a rect and creates a new rect with the value determined by
+    // xyMinMax swapped with the current point
     private static RectHV buildNextNodeRect(RectHV prevRect, Point2D point, byte xyMinMax) {
         switch(xyMinMax) {
             case X_MIN:
@@ -102,7 +140,14 @@ public class KdTree {
         }
     }
 
-    // does the set contain point p?
+    /**
+     * Traverses the KdTree to determine if the point <tt>p</tt> is present
+     *
+     * @param p the Point2D to search for
+     * @return is the point <tt>p</tt> in the KdTree, false if KdTree is empty
+     * @throws IllegalArgumentException if <tt>p</tt> is null
+     * @see Point2D
+     */
     public boolean contains(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Argument cannot be null");
         return contains(root, p, X_ALIGNED);
@@ -111,6 +156,9 @@ public class KdTree {
     private boolean contains(Node node, Point2D point, boolean orientation) {
         if (node == null) { return false; }
         if (node.p.compareTo(point) == 0) { return true; }
+
+        // X_ALIGNED = false; Y_ALIGNED = TRUE;
+        // orientation is swapped when recursively calling contains
         if (!orientation) {
             if (point.x() < node.p.x()) {
                 return contains(node.lb, point, Y_ALIGNED);
@@ -126,15 +174,18 @@ public class KdTree {
         }
     }
 
-    // draw all points to standard draw
+    /**
+     * draw all points to standard draw, along with axis aligned dissecting
+     * line segment
+     */
     public void draw() { draw(root, X_ALIGNED, UNIT_SQUARE); }
 
     private void draw(Node node, boolean orientation, RectHV rect) {
         if (node == null) return;
-        StdDraw.setPenColor(Color.black);
-        StdDraw.setPenRadius(0.01);
-        node.p.draw();
         StdDraw.setPenRadius();
+
+        // X_ALIGNED = false; Y_ALIGNED = TRUE;
+        // orientation is swapped when recursively calling draw
         if (!orientation) {
             StdDraw.setPenColor(Color.red);
             StdDraw.line(node.p.x(), rect.ymin(), node.p.x(), rect.ymax());
@@ -146,21 +197,40 @@ public class KdTree {
             if (node.lb != null) draw(node.lb, X_ALIGNED, buildNextNodeRect(rect, node.p, Y_MAX));
             if (node.rt != null) draw(node.rt, X_ALIGNED, buildNextNodeRect(rect, node.p, Y_MIN));
         }
+        StdDraw.setPenColor(Color.black);
+        StdDraw.setPenRadius(0.01);
+        node.p.draw();
         StdDraw.show();
     }
 
-    // all points that are inside the rectangle (or on the boundary)
+    /**
+     * all points that are inside the rectangle (or on the boundary) <br />
+     * <br />
+     * Recursively traverses the KdTree considering the axis alignment based on
+     * node depth. First determines if <tt>rect</tt>> intersects the nodes
+     * splitting line segment, and traverses both left and right subtrees if it
+     * does. If it doesn't intersect then an arbitrary point on <tt>rect</tt> is
+     * compared with the <tt>x</tt> or <tt>y</tt> value of the node based on the
+     * axis alignment and only the relevant subtree is traversed
+     *
+     * @param rect RectHV to search for containing points
+     * @return Iterable of type Point2D containing points inside <tt>rect</tt>,
+     * empty iterable if no point is inside <tt>rect</tt>
+     * @throws IllegalArgumentException if <tt>rect</tt> is null
+     * @see RectHV
+     */
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException("Argument cannot be null");
-        debugRangeCalls = 0;
         Stack<Point2D> result = new Stack<Point2D>();
         return range(root, rect, result, X_ALIGNED);
     }
 
     private Stack<Point2D> range(Node node, RectHV queryRect, Stack<Point2D> result, boolean orientation) {
         if (node == null) return result;
-        debugRangeCalls++;
 
+        // X_ALIGNED = false; Y_ALIGNED = TRUE;
+        // orientation is swapped when recursively calling range
+        // if intersectedSplittingLineSegment is true the other if-condition is ignored
         if (!orientation) {
             boolean intrsSplittingLineSeg = queryRect.intersects(new RectHV(node.p.x(), 0, node.p.x(), 1));
             if (intrsSplittingLineSeg || queryRect.xmin() < node.p.x()) {
@@ -182,7 +252,20 @@ public class KdTree {
         return result;
     }
 
-    // a nearest neighbor in the set to point p; null if the set is empty
+    /**
+     * a nearest neighbor in the set to point p; null if the set is empty<br />
+     * <br />
+     * Recursively traverses the KdTree considering the axis alignment, based on
+     * node depth, to find the nearest point to <tt>p</tt>. Traverses both
+     * subtrees, starting with the most relevant subtree unless if the currently
+     * known nearest point is closer than the distance from <tt>p</tt> to the
+     * potential subtrees containing rectangle
+     *
+     * @param p Point2D. Finds the nearest point to <tt>p</tt>
+     * @return the Point2D that is nearest to <tt>p</tt>, null if set is empty
+     * @throws IllegalArgumentException if <tt>p</tt> is null
+     * @see Point2D
+     */
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Argument cannot be null");
         if (size == 0) return null;
@@ -198,6 +281,8 @@ public class KdTree {
             champion = node.p;
         }
 
+        // X_ALIGNED = false; Y_ALIGNED = TRUE;
+        // orientation is swapped when recursively calling nearest
         if (!orientation) {
             if (point.x() < node.p.x()) {
                 champion = nearest(node.lb, point, champion, Y_ALIGNED, buildNextNodeRect(rect, node.p, X_MAX));
@@ -218,61 +303,59 @@ public class KdTree {
         return champion;
     }
 
-    // unit testing of the methods (optional)
+    // unit testing of the methods
     public static void main(String[] args) {
         // initialize the two data structures with point from file
         String filename = args[0];
         In in = new In(filename);
         KdTree kdtree = new KdTree();
-        ArrayList<Point2D> points = new ArrayList<Point2D>();
-        StdOut.println(kdtree.size());
-
-        StdDraw.enableDoubleBuffering();
-        StdDraw.clear();
-        StdDraw.setCanvasSize(1000, 1000);
+        StdOut.println("is KdTree empty " + kdtree.isEmpty() + ". Size: " + kdtree.size());
         while (!in.isEmpty()) {
             double x = in.readDouble();
             double y = in.readDouble();
             Point2D p = new Point2D(x, y);
             kdtree.insert(p);
-            points.add(p);
-            // StdOut.println(kdtree.size());
         }
 
+        StdDraw.enableDoubleBuffering();
         StdDraw.clear();
-        StdDraw.setPenColor(Color.black);
-        StdDraw.setPenRadius(0.01);
-        kdtree.draw();
-        StdDraw.show();
+        StdDraw.setCanvasSize(1000, 1000);
 
-        /* StdOut.println("random point: " + kdtree.contains(new Point2D(StdRandom.uniformDouble(), StdRandom.uniformDouble()))); // + " - contains was called:" + kdtree.debugContainsCalls);
-        StdOut.println(kdtree.size());*/
-
-        for (Point2D p : points) {
-            StdOut.println(p.toString() + ": " + kdtree.contains(p));
-        }
-
-        RectHV testRect = new RectHV(0.75, 0.7, 0.9, 1);
-        StdDraw.setPenColor(Color.green);
+        StdOut.println("is KdTree empty " + kdtree.isEmpty() + ". Size: " + kdtree.size());
+        double xMin = StdRandom.uniformInt(0, 70);
+        double yMin = StdRandom.uniformInt(0, 70);
+        double xMax = (double) StdRandom.uniformInt((int) xMin + 20, 100) / 100;
+        double yMax = (double) StdRandom.uniformInt((int) yMin + 20, 100) / 100;
+        xMin /= 100;
+        yMin /= 100;
+        RectHV testRect = new RectHV(xMin, yMin, xMax, yMax);
+        StdDraw.setPenColor(Color.MAGENTA);
         testRect.draw();
-        StdDraw.show();
 
+        StdOut.print("Points in range " + testRect.toString() + ": ");
         for (Point2D p : kdtree.range(testRect)) {
             StdDraw.setPenColor(Color.red);
             StdDraw.setPenRadius(0.03);
             p.draw();
-            StdDraw.show();
+            StdOut.print(p.toString() + "/");
         }
-        StdOut.println("Range was called: " + kdtree.debugRangeCalls);
 
-        Point2D testNear = new Point2D(0.81, 0.30);
+        double randX = (double) StdRandom.uniformInt(0, 100) / 100;
+        double randY = (double) StdRandom.uniformInt(0, 100) / 100;
+        Point2D testNear = new Point2D(randX, randY);
+        StdOut.println("\ncontains random point " + testNear + ": " + kdtree.contains(testNear));
         Point2D nearest = kdtree.nearest(testNear);
-        StdDraw.setPenColor(Color.ORANGE);
-        StdDraw.setPenRadius(0.01);
+        StdDraw.setPenColor(Color.green);
+        StdDraw.setPenRadius(0.02);
         nearest.draw();
+        StdDraw.setPenRadius(0.015);
         testNear.draw();
+        StdOut.println("Point " + nearest.toString() + " was the nearest to " + testNear);
+        StdOut.println("contains point " + nearest.toString() + ": " + kdtree.contains(nearest));
+
+        StdDraw.setPenColor(Color.black);
+        StdDraw.setPenRadius(0.01);
+        kdtree.draw();
         StdDraw.show();
-        StdOut.println("Point " + nearest.toString() + " was the nearest"); // and nearest() was called: " + kdtree.debugNearestCalls + " the champion was found after " + kdtree.debugNearestCallsWhenChampFound + " calls, number of champs: " + kdtree.debugNearestNumberOfChamps);
-        // StdOut.println(nearest.toString() + ": " + kdtree.contains(nearest) + " at depth " + kdtree.pointDepth(nearest) + " - contains was called:" + kdtree.debugContainsCalls);
     }
 }
