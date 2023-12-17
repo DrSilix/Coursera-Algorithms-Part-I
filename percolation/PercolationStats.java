@@ -26,7 +26,6 @@ import edu.princeton.cs.algs4.StdStats;
 public class PercolationStats {
     private double mean;
     private double stddev;
-    private double confidenceLevel95;
     private double confLo, confHi;
 
     // perform independent trials on an n-by-n grid
@@ -46,7 +45,7 @@ public class PercolationStats {
 
         mean = StdStats.mean(trialResult);
         stddev = StdStats.stddev(trialResult);
-        confidenceLevel95 = (1.96 * stddev) / Math.sqrt(trials);
+        double confidenceLevel95 = (1.96 * stddev) / Math.sqrt(trials);
         confLo = mean - confidenceLevel95;
         confHi = mean + confidenceLevel95;
     }
