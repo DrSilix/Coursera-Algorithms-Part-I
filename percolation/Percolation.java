@@ -1,7 +1,7 @@
 /* *****************************************************************************
  *  Name:              Alex Hackl
  *  Coursera User ID:  alexhackl@live.com
- *  Last modified:     11/19/2023
+ *  Last modified:     12/17/2023
  *
  *  Compilation: javac-algs4 Percolation.java
  *  Execution: java-algs4 Percolation < input10.txt
@@ -11,10 +11,6 @@
  *  then can be used to perform operations on that data structure including opening
  *  nodes, checking if they are open or full, checking the number of sites, and
  *  checking to see if the system percolates
- *
- *  This can also be run itself with a text file standard input and will output
- *  the connection pairs ending with the number of components
- *
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.StdIn;
@@ -26,9 +22,9 @@ public class Percolation {
     private static final int TOP_FAKE_NODE = 0;
 
     private short gridSize;
-    private WeightedQuickUnionUF uf;
+    private WeightedQuickUnionUF uf, isFullUF;
     private byte[] openFull;
-    private boolean percolates, backwashFix;
+    private boolean percolates;
     private int numOpen;
 
     // creates n-by-n grid, with all sites initially blocked
@@ -36,14 +32,13 @@ public class Percolation {
     // the size of the data structures are 2 greater than needed, the extra 2 are for the fake nodes
     public Percolation(int n) {
         validate(n);
-
         gridSize = (short) n;
         uf = new WeightedQuickUnionUF(gridSize * gridSize + 2);
+        isFullUF = new WeightedQuickUnionUF(gridSize * gridSize + 2);
         openFull = new byte[gridSize * gridSize + 2];
-
-        numOpen = 0;
         openFull[TOP_FAKE_NODE] = OPEN_FULL;
         openFull[bottomFakeNode(gridSize)] = OPEN;
+        numOpen = 0;
     }
 
     // returns the 1d index for the given coordinates if it is within bounds otherwise it returns -1
@@ -52,31 +47,21 @@ public class Percolation {
         return (gridSize * (row - 1)) + col;
     }
 
-    // returns
-    private int[] get1DtoXY(int n) {
-        return new int[] { ((n - 1) / gridSize) + 1, ((n - 1) % gridSize) + 1 };
-    }
-
     private static int bottomFakeNode(int gridSize) { return gridSize * gridSize + 1; }
 
     // returns array of 1d indices for valid neighbors to a node {up, down, left, right}
     // if the node is in the top or bottom row the relevant fake node id is swapped
     private int[] retrieveNeighborsTo1D(int row, int col) {
-        int up = getXYTo1D(row - 1, col);
-        int down = getXYTo1D(row + 1, col);
-        int left = getXYTo1D(row, col - 1);
-        int right = getXYTo1D(row, col + 1);
-
+        int up = getXYTo1D(row - 1, col), down = getXYTo1D(row + 1, col);
+        int left = getXYTo1D(row, col - 1), right = getXYTo1D(row, col + 1);
         if (up == -1) up = TOP_FAKE_NODE;
         if (down == -1) down = bottomFakeNode(gridSize);
-
         return new int[] { up, down, left, right };
     }
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
         validate(row, col);
-
         int p = getXYTo1D(row, col);
         if (openFull[p] > CLOSED) return;
         int[] nearby = retrieveNeighborsTo1D(row, col);
@@ -86,15 +71,14 @@ public class Percolation {
         union(p, nearby[3]);
         openFull[p] = OPEN;
         numOpen++;
-
-        percolates();
     }
 
     // q is -1 for invalid neighbors
     private void union(int p, int q) {
-        if (q < 0 || openFull[q] == CLOSED || (percolates && q == bottomFakeNode(gridSize))) return;
+        if (q < 0 || openFull[q] == CLOSED) return;
         uf.union(p, q);
-        if (openFull[q] == OPEN_FULL && openFull[p] < OPEN_FULL) openFull[p] = OPEN;
+        if (q != bottomFakeNode(gridSize)) isFullUF.union(p, q);
+        if (openFull[q] == OPEN_FULL && openFull[p] < OPEN_FULL) openFull[p] = OPEN_FULL;
     }
 
     // is the site (row, col) open?
@@ -106,39 +90,10 @@ public class Percolation {
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
         validate(row, col);
-
-        if (backwashFix) backwashFix();
-
         int n = getXYTo1D(row, col);
-        if (openFull[n] == OPEN_FULL || uf.find(n) == uf.find(TOP_FAKE_NODE)) {
-            openFull[n] = OPEN_FULL;
-            return true;
-        }
-        return false;
-    }
-
-    // wipe and rebuild the union-find then check percolates on each open bottom row node
-    private void backwashFix() {
-        uf = new WeightedQuickUnionUF(gridSize * gridSize + 2);
-        for (int p = 1; p < openFull.length - 1; p++) {
-            if (openFull[p] > CLOSED) {
-                int[] xy = get1DtoXY(p);
-                int[] nearby = retrieveNeighborsTo1D(xy[0], xy[1]);
-
-                union(p, nearby[0]);
-                if (nearby[1] != bottomFakeNode(gridSize)) union(p, nearby[1]);
-                union(p, nearby[2]);
-                union(p, nearby[3]);
-            }
-        }
-        int startOfBottomRow = (openFull.length - 1) - gridSize;
-        for (int p = startOfBottomRow; p < openFull.length - 1; p++) {
-            if (openFull[p] > CLOSED && uf.find(p) == uf.find(TOP_FAKE_NODE)) {
-                uf.union(p, bottomFakeNode(gridSize));
-                break;
-            }
-        }
-        backwashFix = false;
+        if (openFull[n] == OPEN_FULL) return true;
+        if (isFullUF.find(n) == isFullUF.find(TOP_FAKE_NODE)) openFull[n] = OPEN_FULL;
+        return openFull[n] == OPEN_FULL;
     }
 
     // returns the number of open sites
@@ -148,7 +103,6 @@ public class Percolation {
     public boolean percolates() {
         if (!percolates && uf.find(bottomFakeNode(gridSize)) == uf.find(TOP_FAKE_NODE)) {
             percolates = true;
-            backwashFix = true;
         }
         return percolates;
     }

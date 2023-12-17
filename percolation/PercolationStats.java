@@ -1,7 +1,7 @@
 /* *****************************************************************************
  *  Name:              Alex Hackl
  *  Coursera User ID:  alexhackl@live.com
- *  Last modified:     11/19/2023
+ *  Last modified:     12/17/2023
  *
  *  Compilation: javac-algs4 PercolationStats.java
  *  Execution: java-algs4 PercolationStats 100 200
@@ -24,7 +24,6 @@ import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
 
 public class PercolationStats {
-    private double[] trialResult;
     private double mean;
     private double stddev;
     private double confidenceLevel95;
@@ -34,7 +33,7 @@ public class PercolationStats {
     public PercolationStats(int n, int trials) {
         validate(n, trials);
 
-        trialResult = new double[trials];
+        double[] trialResult = new double[trials];
 
         for (int i = 0; i < trials; i++) {
             Percolation trial = new Percolation(n);
@@ -45,33 +44,31 @@ public class PercolationStats {
             // StdOut.println("Trial " + (i + 1) + " completed.");
         }
 
-        mean = mean();
-
-        stddev = stddev();
+        mean = StdStats.mean(trialResult);
+        stddev = StdStats.stddev(trialResult);
         confidenceLevel95 = (1.96 * stddev) / Math.sqrt(trials);
-
-        confLo = confidenceLo();
-        confHi = confidenceHi();
+        confLo = mean - confidenceLevel95;
+        confHi = mean + confidenceLevel95;
     }
 
     // sample mean of percolation threshold
     public double mean() {
-        return StdStats.mean(trialResult);
+        return mean;
     }
 
     // sample standard deviation of percolation threshold
     public double stddev() {
-        return StdStats.stddev(trialResult);
+        return stddev;
     }
 
     // low endpoint of 95% confidence interval
     public double confidenceLo() {
-        return mean - confidenceLevel95;
+        return confLo;
     }
 
     // high endpoint of 95% confidence interval
     public double confidenceHi() {
-        return mean + confidenceLevel95;
+        return confHi;
     }
 
     private void validate(int n, int trials) {
