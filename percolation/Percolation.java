@@ -22,14 +22,14 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private int gridSize;
+    private static final byte CLOSED = 0, OPEN = 1, OPEN_FULL = 2;
+    private static final int TOP_FAKE_NODE = 0;
+
+    private short gridSize;
     private WeightedQuickUnionUF uf;
-    private boolean[] open;
-    private boolean[] full;
-    private boolean percolates;
+    private byte[] openFull;
+    private boolean percolates, backwashFix;
     private int numOpen;
-    private int topFakeNode;
-    private int bottomFakeNode;
 
     // creates n-by-n grid, with all sites initially blocked
     // id 0 and the last id are the fake nodes, the top and bottom respectively
@@ -37,41 +37,27 @@ public class Percolation {
     public Percolation(int n) {
         validate(n);
 
-        gridSize = n;
-        int gridSquared = gridSize * gridSize;
-
-        uf = new WeightedQuickUnionUF(gridSquared + 2);
-
-        open = new boolean[gridSquared + 2];
-        full = new boolean[gridSquared + 2];
+        gridSize = (short) n;
+        uf = new WeightedQuickUnionUF(gridSize * gridSize + 2);
+        openFull = new byte[gridSize * gridSize + 2];
 
         numOpen = 0;
-
-        topFakeNode = 0;
-        bottomFakeNode = gridSquared + 1;
-
-        open[topFakeNode] = true; // the top fake node needs to be open and full
-        full[topFakeNode] = true;
-
-        open[bottomFakeNode] = true; // the bottom fake node needs to be open and not full
+        openFull[TOP_FAKE_NODE] = OPEN_FULL;
+        openFull[bottomFakeNode(gridSize)] = OPEN;
     }
 
     // returns the 1d index for the given coordinates if it is within bounds otherwise it returns -1
     private int getXYTo1D(int row, int col) {
-        if (row < 1 || row > gridSize || col < 1 || col > gridSize) {
-            return -1;
-        }  // possibly use an exception to handle oob
+        if (row < 1 || row > gridSize || col < 1 || col > gridSize) return -1;
         return (gridSize * (row - 1)) + col;
     }
 
+    // returns
     private int[] get1DtoXY(int n) {
-        if (n > 0 && n <= (gridSize * gridSize)) {
-            return new int[] { n / gridSize, n % gridSize };
-        }
-        else {
-            return new int[] { -1, -1 };
-        }
+        return new int[] { ((n - 1) / gridSize) + 1, ((n - 1) % gridSize) + 1 };
     }
+
+    private static int bottomFakeNode(int gridSize) { return gridSize * gridSize + 1; }
 
     // returns array of 1d indices for valid neighbors to a node {up, down, left, right}
     // if the node is in the top or bottom row the relevant fake node id is swapped
@@ -81,12 +67,8 @@ public class Percolation {
         int left = getXYTo1D(row, col - 1);
         int right = getXYTo1D(row, col + 1);
 
-        if (up == -1) {
-            up = topFakeNode;
-        }
-        if (down == -1) {
-            down = bottomFakeNode;
-        }
+        if (up == -1) up = TOP_FAKE_NODE;
+        if (down == -1) down = bottomFakeNode(gridSize);
 
         return new int[] { up, down, left, right };
     }
@@ -95,92 +77,78 @@ public class Percolation {
     public void open(int row, int col) {
         validate(row, col);
 
-        // get the index of the node and its nearby nodes
         int p = getXYTo1D(row, col);
+        if (openFull[p] > CLOSED) return;
         int[] nearby = retrieveNeighborsTo1D(row, col);
-
-        if (open[p]) {
-            return;
-        }
-
-        checkNeighbors(p, nearby[0]);
-        checkNeighbors(p, nearby[1]);
-        checkNeighbors(p, nearby[2]);
-        checkNeighbors(p, nearby[3]);
-
-        open[p] = true;
+        union(p, nearby[0]);
+        union(p, nearby[1]);
+        union(p, nearby[2]);
+        union(p, nearby[3]);
+        openFull[p] = OPEN;
         numOpen++;
 
         percolates();
     }
 
-    private void checkNeighbors(int p, int q) {
-        // neighbor value is -1 for invalid neighbors
-        if (q < 0 || !open[q]) {
-            return;
-        }
-
-        // call to union-find data structure that connects nodes
-        uf.union(p, q);  // look into not checking if they are part of the same set
-
-        // checks if the neighbor we are evaluating is full and marks the current node full
-        if (!percolates && full[q] && !full[p]) {
-            full[p] = true;
-        }
+    // q is -1 for invalid neighbors
+    private void union(int p, int q) {
+        if (q < 0 || openFull[q] == CLOSED || (percolates && q == bottomFakeNode(gridSize))) return;
+        uf.union(p, q);
+        if (openFull[q] == OPEN_FULL && openFull[p] < OPEN_FULL) openFull[p] = OPEN;
     }
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
         validate(row, col);
-        return open[getXYTo1D(row, col)];
+        return openFull[getXYTo1D(row, col)] > CLOSED;
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
         validate(row, col);
-        int n = getXYTo1D(row, col);
 
-        // quick check on the site then comprehensive
-        if (full[n] || (!percolates && uf.find(n) == uf.find(topFakeNode))) {
-            full[n] = true;
+        if (backwashFix) backwashFix();
+
+        int n = getXYTo1D(row, col);
+        if (openFull[n] == OPEN_FULL || uf.find(n) == uf.find(TOP_FAKE_NODE)) {
+            openFull[n] = OPEN_FULL;
             return true;
         }
-
-        if (percolates && full[n]) {
-            backwashFix(n);
-        }
-
         return false;
     }
 
-    private void backwashFix(int p) {
-        int[] rowCol = get1DtoXY(p);
-        int[] neighbors = retrieveNeighborsTo1D(rowCol[0], rowCol[1]);
-        for (int i = 0; i < 4; i++) {
-            // abort if the neighbor is invalid or one of the fake nodes
-            if (neighbors[i] == -1 || neighbors[i] == topFakeNode
-                    || neighbors[i] == bottomFakeNode) {
-                continue;
-            }
+    // wipe and rebuild the union-find then check percolates on each open bottom row node
+    private void backwashFix() {
+        uf = new WeightedQuickUnionUF(gridSize * gridSize + 2);
+        for (int p = 1; p < openFull.length - 1; p++) {
+            if (openFull[p] > CLOSED) {
+                int[] xy = get1DtoXY(p);
+                int[] nearby = retrieveNeighborsTo1D(xy[0], xy[1]);
 
-            // fill empty neighbors and restart the process
-            if (open[neighbors[i]] && !full[neighbors[i]]) {
-                full[neighbors[i]] = true;
-                backwashFix(neighbors[i]);
+                union(p, nearby[0]);
+                if (nearby[1] != bottomFakeNode(gridSize)) union(p, nearby[1]);
+                union(p, nearby[2]);
+                union(p, nearby[3]);
             }
         }
+        int startOfBottomRow = (openFull.length - 1) - gridSize;
+        for (int p = startOfBottomRow; p < openFull.length - 1; p++) {
+            if (openFull[p] > CLOSED && uf.find(p) == uf.find(TOP_FAKE_NODE)) {
+                uf.union(p, bottomFakeNode(gridSize));
+                break;
+            }
+        }
+        backwashFix = false;
     }
 
     // returns the number of open sites
-    public int numberOfOpenSites() {
-        return numOpen;
-    }
+    public int numberOfOpenSites() { return numOpen; }
 
     // does the system percolate?
     public boolean percolates() {
-        // quick check percolates value then do a more thorough check
-        if (!percolates && uf.find(bottomFakeNode) == uf.find(topFakeNode)) {
+        if (!percolates && uf.find(bottomFakeNode(gridSize)) == uf.find(TOP_FAKE_NODE)) {
             percolates = true;
+            backwashFix = true;
         }
         return percolates;
     }
@@ -210,19 +178,7 @@ public class Percolation {
             int p = StdIn.readInt();
             int q = StdIn.readInt();
             test.open(p, q);
-            StdOut.println(p + " " + q);
-
-            int opened = 0;
-            for (int row = 1; row <= n; row++) {
-                for (int col = 1; col <= n; col++) {
-                    if (test.isFull(row, col)) {
-                        opened++;
-                    }
-                    else if (test.isOpen(row, col)) {
-                        opened++;
-                    }
-                }
-            }
+            // StdOut.println(p + " " + q);
         }
         StdOut.println(test.uf.count() + " components");
     }

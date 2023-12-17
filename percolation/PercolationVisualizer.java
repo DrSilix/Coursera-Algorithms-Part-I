@@ -25,7 +25,7 @@ import java.awt.Font;
 public class PercolationVisualizer {
 
     // delay in milliseconds (controls animation speed)
-    private static final int DELAY = 100;
+    private static final int DELAY = 10;
 
     // draw n-by-n percolation system
     public static void draw(Percolation perc, int n) {
@@ -62,27 +62,44 @@ public class PercolationVisualizer {
 
     }
 
+    private static void drawFilename(String filename, int n) {
+        StdDraw.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.text(0.25 * n, 1.025 * n, filename);
+    }
+
     public static void main(String[] args) {
-        In in = new In(args[0]);      // input file
-        int n = in.readInt();         // n-by-n percolation system
 
-        // turn on animation mode
-        StdDraw.enableDoubleBuffering();
+        for (String filename : args) {
+            In in = new In(filename);      // input file
+            int n = in.readInt();         // n-by-n percolation system
 
-        // repeatedly read in sites to open and draw resulting system
-        Percolation perc = new Percolation(n);
-        draw(perc, n);
-        StdDraw.show();
-        StdDraw.pause(DELAY);
-        while (!in.isEmpty()) {
-            int i = in.readInt();
-            int j = in.readInt();
-            perc.open(i, j);
+            // turn on animation mode
+            StdDraw.enableDoubleBuffering();
+            StdOut.print("Drawing " + filename);
+
+            // repeatedly read in sites to open and draw resulting system
+            Percolation perc = new Percolation(n);
             draw(perc, n);
+            drawFilename(filename, n);
             StdDraw.show();
             StdDraw.pause(DELAY);
+            while (!in.isEmpty()) {
+                int i = in.readInt();
+                int j = in.readInt();
+                perc.open(i, j);
+                draw(perc, n);
+                drawFilename(filename, n);
+                StdDraw.show();
+                StdDraw.pause(DELAY);
+            }
+            StdOut.println(" - Finished");
+            StdDraw.pause(500);
+            StdDraw.clear();
+            StdDraw.picture((double) n/2, (double) n/2, filename.substring(0, filename.length() - 4) + ".png", n * 1.1, n * 1.1);
+            StdDraw.show();
+            StdDraw.pause(500);
         }
-        StdOut.println("Finished");
     }
 }
 
